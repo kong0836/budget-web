@@ -17,7 +17,12 @@ const routes: Array<RouteConfig> = [
     // this generates a separate chunk (about.[hash].js) for this route
     // which is lazy-loaded when the route is visited.
     component: () => import(/* webpackChunkName: "about" */ '../views/AboutView.vue')
-  }
+  },
+  {
+    path: '/json-editor',
+    name: 'json-editor',
+    component: () => import(/* webpackChunkName: "json-editor" */ '../components/editor/json-editor-demo.vue')
+  },
 ]
 
 const router = new VueRouter({
