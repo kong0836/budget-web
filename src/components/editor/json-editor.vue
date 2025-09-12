@@ -1,5 +1,8 @@
 <template>
-  <v-jsoneditor ref="jsonEditorRef" v-model="jsonValue" :options="options" height="400px" />
+  <v-jsoneditor ref="jsonEditorRef"
+v-model="jsonValue"
+:options="options"
+height="400px" />
 </template>
 
 <script lang="ts">
@@ -18,20 +21,20 @@ const DEFAULT_OPTIONS = {
     navigationBar: true,
     // 是否显示主菜单栏：true表示显示
     mainMenuBar: true,
-}
+};
 
 @Component({
   name: 'JsonEditor'
 })
 export default class JsonEditor extends Vue {
-    @Prop({required: true,type:String,default: { "a": "b"}}) value!: string;
+    @Prop({ required: true, type:String, default: { "a": "b" } }) value!: string;
     // @Prop({required: false,type:Object,default: {}}) options!: any;
     
     options = DEFAULT_OPTIONS;
 
     get jsonValue(){
         try {
-            if(!this.value){
+            if (!this.value){
                 return {};
             }
             return typeof this.value === 'string' ? JSON.parse(this.value) : this.value;
@@ -40,7 +43,7 @@ export default class JsonEditor extends Vue {
         }
     }
     set jsonValue(value){
-        if(typeof value === 'string'){
+        if (typeof value === 'string'){
             this.$emit('input', value);
             return;
         }
@@ -51,13 +54,13 @@ export default class JsonEditor extends Vue {
     handleValidate(){
         try {
             // 尝试从编辑器获取当前值
-            const {editor} = this.$refs.jsonEditorRef as any;
-            if(editor && typeof editor.get === 'function'){
+            const { editor } = this.$refs.jsonEditorRef as any;
+            if (editor && typeof editor.get === 'function'){
                 const currentValue = editor.get();
-                if(typeof currentValue === 'object'){
+                if (typeof currentValue === 'object'){
                     // 如果是对象，尝试序列化
                  JSON.stringify(currentValue);
-                }else if(typeof currentValue === 'string'){
+                } else if (typeof currentValue === 'string'){
                     // 如果是字符串，尝试解析
                     JSON.parse(currentValue);
                 }
@@ -65,7 +68,7 @@ export default class JsonEditor extends Vue {
             }
 
             // 如果无法从编辑器获取值，则验证当前的jsonValue
-            if(typeof this.jsonValue === 'string'){
+            if (typeof this.jsonValue === 'string'){
                 JSON.parse(this.jsonValue);
             } else {
                 JSON.stringify(this.jsonValue);
