@@ -6,7 +6,7 @@
             :rules="formRules"
             :label-width="120">
             <el-form-item label="数据" prop="value">
-                <json-editor ref="jsonEditorRef" v-model="form.value" />
+              <json-editor ref="jsonEditorRef" v-model="form.value" />
             </el-form-item>
         </el-form>
         <el-button type="primary" @click="submitForm">提交</el-button>
@@ -28,7 +28,7 @@ export default class JsonEditorDemo extends Vue {
     };
 
     valueValidator(rule: any, value: any, callback: any){
-        const valid = (this.$refs.jsonEditorRef as JsonEditor).handleValidate();
+      const valid = (this.$refs.jsonEditorRef as JsonEditor).handleValidate();
         callback(valid ? undefined : '请输入正确的json格式');
     }
 
@@ -39,7 +39,7 @@ export default class JsonEditorDemo extends Vue {
     };
 
     async submitForm(){
-        await (this.$refs.formRef as Form).validate();
+      await (this.$refs.formRef as Form).validate();
     }
 }
 </script>
