@@ -7,12 +7,12 @@ const routes: Array<RouteConfig> = [
   {
     path: '/',
     name: 'home',
-    component: () => import(/* webpackChunkName: "home" */ '../views/home.vue')
+    component: () => import(/* webpackChunkName: "home" */ '@/views/home.vue')
   },
   {
     path: '/json-editor',
     name: 'json-editor',
-    component: () => import(/* webpackChunkName: "json-editor" */ '../components/editor/json-editor-demo.vue')
+    component: () => import(/* webpackChunkName: "json-editor" */ '@/components/editor/json-editor-demo.vue')
   },
 ];
 
