@@ -1,12 +1,13 @@
 <template>
-  <v-jsoneditor ref="jsonEditorRef"
-v-model="jsonValue"
-:options="options"
-height="400px" />
+  <v-jsoneditor
+      ref="jsonEditorRef"
+      v-model="jsonValue"
+      :options="options"
+      height="400px" />
 </template>
 
 <script lang="ts">
-import { Vue, Component, Prop } from 'vue-property-decorator';
+import { Component, Prop, Vue } from 'vue-property-decorator';
 
 const DEFAULT_OPTIONS = {
     // 编辑模式：'code'表示代码模式，也可以是'text'或'tree'
@@ -29,7 +30,7 @@ const DEFAULT_OPTIONS = {
 export default class JsonEditor extends Vue {
     @Prop({ required: true, type:String, default: { "a": "b" } }) value!: string;
     // @Prop({required: false,type:Object,default: {}}) options!: any;
-    
+
     options = DEFAULT_OPTIONS;
 
     get jsonValue(){
@@ -42,6 +43,7 @@ export default class JsonEditor extends Vue {
             return this.value;
         }
     }
+
     set jsonValue(value){
         if (typeof value === 'string'){
             this.$emit('input', value);
