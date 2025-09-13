@@ -6,7 +6,11 @@
     "serve": "vue-cli-service serve --open",
     "build": "vue-cli-service build",
     "lint": "eslint . --ext .js,.ts,.vue",
-    "lint:fix": "eslint . --ext .js,.ts,.vue --fix"
+    "lint:fix": "eslint . --ext .js,.ts,.vue --fix",
+    "lint:css": "stylelint 'src/**/*.*css'",
+    "lint:css:fix": "stylelint 'src/**/*.*css' --fix",
+    "lint:all": "npm run lint && npm run lint:css",
+    "lint:all:fix": "npm run lint:fix && npm run lint:css:fix"
   },
   "dependencies": {
     "core-js": "^3.8.3",
@@ -31,6 +35,8 @@
     "eslint": "^7.32.0",
     "eslint-plugin-vue": "^8.0.3",
     "lint-staged": "^11.1.2",
+    "stylelint": "^13.13.0",
+    "stylelint-config-standard": "^22.0.0",
     "sass": "^1.32.7",
     "sass-loader": "^12.0.0",
     "typescript": "~4.5.5",
@@ -38,5 +44,13 @@
   },
   "gitHooks": {
     "pre-commit": "lint-staged"
+  },
+  "lint-staged": {
+    "*.{js,jsx,vue,ts,tsx}": [
+      "eslint --fix:"
+    ],
+    "*.{css,scss,less}": [
+      "stylelint --fix"
+    ]
   }
 }
