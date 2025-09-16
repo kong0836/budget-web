@@ -14,6 +14,11 @@ const routes: Array<RouteConfig> = [
     name: 'json-editor',
     component: () => import(/* webpackChunkName: "json-editor" */ '@/components/editor/json-editor-demo.vue')
   },
+  {
+    path: '/json-tree',
+    name: 'json-tree',
+    component: () => import(/* webpackChunkName: "json-tree" */ '@/components/json-tree.vue')
+  },
 ];
 
 const router = new VueRouter({
