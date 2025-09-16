@@ -1,29 +1,15 @@
 <template>
   <div class="json-pretty-demo">
-    <h3>vue-json-pretty 示例</h3>
-
-    <div class="theme-selector">
-      <label>选择主题:</label>
-      <select v-model="selectedTheme">
-        <option
-          v-for="theme in themes"
-          :key="theme.value"
-          :value="theme.value">
-          {{ theme.label }}
-        </option>
-      </select>
-    </div>
-
     <vue-json-pretty
       ref="jsonPretty"
       :data="jsonData"
-      :theme="selectedTheme"
-      :deep="3"
+      theme="light"
+      :deep="0"
       :show-length="true"
       :selectable="true"
+      :showDoubleQuotes="false"
       @click="handleJsonClick"
       class="json-pretty"/>
-
     <div v-if="clickedPath" class="click-info">
       点击路径: <code>{{ clickedPath }}</code>
     </div>
@@ -31,6 +17,7 @@
 </template>
 
 <script lang="ts">
+// https://github.com/leezng/vue-json-pretty/blob/dev/README.zh_CN.md
 import VueJsonPretty from 'vue-json-pretty';
 import 'vue-json-pretty/lib/styles.css';
 import { Component, Vue, Watch } from 'vue-property-decorator';
@@ -82,7 +69,6 @@ export default class JsonTree extends Vue {
   themes= [
     { value: "dark", label: "暗色" },
     { value: "light", label: "亮色" },
-    { value: "dark-blue", label: "深蓝" }
   ];
 
   clickedPath= ""
@@ -91,7 +77,7 @@ export default class JsonTree extends Vue {
   @Watch('selectedTheme')
   onThemeChange() {
     // 当主题改变时，重新渲染 JSON 树
-    this.$refs.jsonPretty.render();
+    (this.$refs.jsonPretty as VueJsonPretty).render();
   }
 
   handleJsonClick(path, data) {
