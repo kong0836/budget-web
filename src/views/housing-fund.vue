@@ -57,10 +57,18 @@ placeholder="如：3.25"></el-input>
 v-for="(period, index) in floatingRates"
 :key="index">
             <div class="form-group">
-              <label>从第{{ period.startYear }}年{{ period.startMonth }}月开始</label>
+              <label>开始期数</label>
+              <el-input v-model="period.startMonth"
+type="number"
+placeholder="如：1"
+:min="1"
+:max="calculatedTotalMonths"></el-input>
+            </div>
+            <div class="form-group">
+              <label>年利率（%）</label>
               <el-input v-model="period.rate"
 type="number"
-placeholder="年利率%"></el-input>
+placeholder="如：3.25"></el-input>
             </div>
             <el-button v-if="floatingRates.length > 1"
 @click="removeRatePeriod(index)"
@@ -70,6 +78,7 @@ size="small">删除</el-button>
           <el-button @click="addRatePeriod"
 type="primary"
 size="small">添加利率期间</el-button>
+          <p class="rate-tip">提示：可以设置多个利率期间，每个期间指定开始期数和对应的年利率</p>
         </div>
       </div>
 
@@ -179,29 +188,70 @@ width="120"></el-table-column>
         </div>
 
         <div class="repayment-schedule">
-          <h5>还款计划（前12个月）</h5>
-          <el-table :data="repaymentSchedule.slice(0, 12)"
+          <h5>完整还款计划</h5>
+          <div class="schedule-controls">
+            <el-input v-model="searchTerm"
+placeholder="搜索期数或日期"
+style="width: 200px; margin-right: 10px;"
+clearable></el-input>
+            <el-select v-model="pageSize"
+placeholder="每页显示条数"
+style="width: 120px;">
+              <el-option label="12条" :value="12"></el-option>
+              <el-option label="24条" :value="24"></el-option>
+              <el-option label="50条" :value="50"></el-option>
+              <el-option label="100条" :value="100"></el-option>
+            </el-select>
+          </div>
+
+          <el-table :data="paginatedSchedule"
 border
-style="width: 100%">
+style="width: 100%; margin-top: 15px;"
+:default-sort="{prop: 'month', order: 'ascending'}">
             <el-table-column prop="month"
 label="期数"
-width="80"></el-table-column>
+width="80"
+sortable></el-table-column>
             <el-table-column prop="date"
 label="还款日期"
-width="120"></el-table-column>
+width="120"
+sortable></el-table-column>
             <el-table-column prop="principal"
 label="本金"
-width="120"></el-table-column>
+width="120"
+sortable></el-table-column>
             <el-table-column prop="interest"
 label="利息"
-width="120"></el-table-column>
+width="120"
+sortable></el-table-column>
             <el-table-column prop="total"
 label="月供"
-width="120"></el-table-column>
+width="120"
+sortable></el-table-column>
             <el-table-column prop="remaining"
 label="剩余本金"
-width="120"></el-table-column>
+width="120"
+sortable></el-table-column>
+            <el-table-column label="操作" width="100">
+              <template slot-scope="scope">
+                <el-button @click="viewDetail(scope.row)"
+type="text"
+size="small">详情</el-button>
+              </template>
+            </el-table-column>
           </el-table>
+
+          <div class="pagination-container">
+            <el-pagination
+              @size-change="handleSizeChange"
+              @current-change="handleCurrentChange"
+              :current-page="currentPage"
+              :page-sizes="[12, 24, 50, 100]"
+              :page-size="pageSize"
+              layout="total, sizes, prev, pager, next, jumper"
+              :total="filteredSchedule.length">
+            </el-pagination>
+          </div>
         </div>
       </div>
     </div>
@@ -227,9 +277,9 @@ export default class HousingFund extends Vue {
 
   fixedRate = 3.25;
 
-  // 浮动利率设置
-  floatingRates: Array<{startYear: number, startMonth: number, rate: number}> = [
-    { startYear: 1, startMonth: 1, rate: 3.25 }
+  // 浮动利率设置（按期数）
+  floatingRates: Array<{startMonth: number, rate: number}> = [
+    { startMonth: 1, rate: 3.25 }
   ];
 
   // 多次提前还款设置
@@ -262,6 +312,13 @@ export default class HousingFund extends Vue {
 
   repaymentSchedule: Array<any> = [];
 
+  // 分页相关
+  currentPage = 1;
+
+  pageSize = 12;
+
+  searchTerm = '';
+
   // 计算总月数
   get calculatedTotalMonths(): number {
     return this.loanYears * 12;
@@ -278,10 +335,9 @@ export default class HousingFund extends Vue {
   // 添加利率期间
   addRatePeriod(): void {
     const lastPeriod = this.floatingRates[this.floatingRates.length - 1];
-    const nextYear = lastPeriod.startYear + 1;
+    const nextMonth = lastPeriod.startMonth + 12; // 默认间隔12个月
     this.floatingRates.push({
-      startYear: nextYear,
-      startMonth: 1,
+      startMonth: nextMonth,
       rate: 3.25
     });
   }
@@ -327,7 +383,11 @@ export default class HousingFund extends Vue {
         principal: this.formatCurrency(monthlyPrincipal),
         interest: this.formatCurrency(monthlyInterest),
         total: this.formatCurrency(monthlyPayment),
-        remaining: this.formatCurrency(Math.max(0, remainingPrincipal))
+        remaining: this.formatCurrency(Math.max(0, remainingPrincipal)),
+        rawPrincipal: monthlyPrincipal,
+        rawInterest: monthlyInterest,
+        rawTotal: monthlyPayment,
+        rawRemaining: Math.max(0, remainingPrincipal)
       });
     }
 
@@ -342,21 +402,25 @@ export default class HousingFund extends Vue {
     return `${year}年${month}月`;
   }
 
-  // 计算浮动利率总利息
+  // 计算浮动利率总利息（按期数）
   calculateFloatingInterest(): number {
     let totalInterest = 0;
     let remainingPrincipal = this.loanAmount;
     const monthlyPrincipal = this.loanAmount / this.calculatedTotalMonths;
 
-    // 按利率期间计算
-    for (let i = 0; i < this.floatingRates.length; i++) {
-      const currentPeriod = this.floatingRates[i];
-      const nextPeriod = this.floatingRates[i + 1];
+    // 对利率期间按开始期数排序
+    const sortedRates = [...this.floatingRates].sort((a, b) => a.startMonth - b.startMonth);
 
-      const startMonth = (currentPeriod.startYear - 1) * 12 + currentPeriod.startMonth;
-      const endMonth = nextPeriod ?
-        (nextPeriod.startYear - 1) * 12 + nextPeriod.startMonth - 1 :
-        this.calculatedTotalMonths;
+    // 按利率期间计算（按期数）
+    for (let i = 0; i < sortedRates.length; i++) {
+      const currentPeriod = sortedRates[i];
+      const nextPeriod = sortedRates[i + 1];
+
+      const startMonth = currentPeriod.startMonth;
+      const endMonth = nextPeriod ? nextPeriod.startMonth - 1 : this.calculatedTotalMonths;
+
+      // 确保开始期数在有效范围内
+      if (startMonth > this.calculatedTotalMonths) continue;
 
       const monthlyRate = currentPeriod.rate / 100 / 12;
 
@@ -519,11 +583,54 @@ export default class HousingFund extends Vue {
     return '¥' + amount.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
   }
 
+  // 分页相关方法
+  get filteredSchedule(): Array<any> {
+    if (!this.searchTerm) {
+      return this.repaymentSchedule;
+    }
+    return this.repaymentSchedule.filter(item =>
+      item.month.toString().includes(this.searchTerm) ||
+      item.date.includes(this.searchTerm)
+    );
+  }
+
+  get paginatedSchedule(): Array<any> {
+    const start = (this.currentPage - 1) * this.pageSize;
+    const end = start + this.pageSize;
+    return this.filteredSchedule.slice(start, end);
+  }
+
+  handleSizeChange(val: number): void {
+    this.pageSize = val;
+    this.currentPage = 1;
+  }
+
+  handleCurrentChange(val: number): void {
+    this.currentPage = val;
+  }
+
+  // 查看详情
+  viewDetail(row: any): void {
+    this.$message({
+      message: `第${row.month}期详情：本金${row.principal}，利息${row.interest}，月供${row.total}，剩余本金${row.remaining}`,
+      type: 'info'
+    });
+  }
+
   // 主计算函数
   calculate(): void {
     if (!this.loanAmount || !this.loanYears || !this.startYear || !this.startMonth) {
       this.$message.error('请填写完整的贷款信息');
       return;
+    }
+
+    // 验证浮动利率设置
+    if (this.rateType === 'floating') {
+      const validRates = this.floatingRates.filter(period => period.startMonth > 0 && period.rate > 0);
+      if (validRates.length === 0) {
+        this.$message.error('请至少设置一个有效的浮动利率期间');
+        return;
+      }
     }
 
     this.totalMonths = this.calculatedTotalMonths;
@@ -540,6 +647,10 @@ export default class HousingFund extends Vue {
     // 计算多次提前还款
     this.calculateMultiplePrepayments();
 
+    // 重置分页
+    this.currentPage = 1;
+    this.searchTerm = '';
+
     this.showResults = true;
   }
 
@@ -550,9 +661,12 @@ export default class HousingFund extends Vue {
     this.startYear = new Date().getFullYear();
     this.startMonth = new Date().getMonth() + 1;
     this.fixedRate = 3.25;
-    this.floatingRates = [{ startYear: 1, startMonth: 1, rate: 3.25 }];
+    this.floatingRates = [{ startMonth: 1, rate: 3.25 }];
     this.prepayments = [{ amount: 0, month: 12, type: 'shorten' }];
     this.showResults = false;
+    this.currentPage = 1;
+    this.pageSize = 12;
+    this.searchTerm = '';
   }
 }
 </script>
@@ -598,15 +712,24 @@ export default class HousingFund extends Vue {
 
       .floating-rates {
         .rate-period {
-          display: flex;
-          align-items: flex-end;
+          display: grid;
+          grid-template-columns: 1fr 1fr auto;
           gap: 10px;
-          margin-bottom: 10px;
+          align-items: end;
+          margin-bottom: 15px;
+          padding: 15px;
+          border: 1px solid #ebeef5;
+          border-radius: 4px;
 
           .form-group {
-            flex: 1;
             margin-bottom: 0;
           }
+        }
+
+        .rate-tip {
+          font-size: 12px;
+          color: #909399;
+          margin-top: 5px;
         }
       }
 
@@ -679,6 +802,17 @@ export default class HousingFund extends Vue {
 
       .repayment-schedule {
         margin-top: 20px;
+
+        .schedule-controls {
+          display: flex;
+          align-items: center;
+          margin-bottom: 15px;
+        }
+
+        .pagination-container {
+          margin-top: 15px;
+          text-align: center;
+        }
       }
     }
   }
