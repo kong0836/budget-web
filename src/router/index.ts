@@ -7,7 +7,14 @@ const routes: Array<RouteConfig> = [
   {
     path: '/',
     name: 'home',
-    component: () => import(/* webpackChunkName: "home" */ '@/views/home.vue')
+    component: () => import(/* webpackChunkName: "home" */ '@/views/home.vue'),
+    children: [
+      {
+        path: '/housing-fund',
+        name: 'housing-fund',
+        component: () => import(/* webpackChunkName: "housing-fund" */ '@/views/housing-fund.vue')
+      }
+    ]
   },
   {
     path: '/json-editor',
