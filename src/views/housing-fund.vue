@@ -20,20 +20,14 @@
         </div>
 
         <div class="form-group">
-          <label>首次还款年份</label>
-          <el-input v-model="startYear"
-                    placeholder="如：2024"
-                    type="number"></el-input>
-        </div>
-
-        <div class="form-group">
-          <label>首次还款月份</label>
-          <el-select v-model="startMonth" placeholder="请选择月份">
-            <el-option v-for="month in 12"
-                       :key="month"
-                       :label="`${month}月`"
-                       :value="month"></el-option>
-          </el-select>
+          <label>首次还款日期</label>
+          <el-date-picker
+            v-model="startDate"
+            type="month"
+            placeholder="选择还款年月"
+            format="yyyy年MM月"
+            value-format="yyyy-MM">
+          </el-date-picker>
         </div>
       </div>
 
@@ -147,7 +141,7 @@
         <div class="basic-info">
           <p><strong>贷款总额：</strong>{{ formatCurrency(loanAmount) }}</p>
           <p><strong>贷款期限：</strong>{{ loanYears }}年（{{ totalMonths }}个月）</p>
-          <p><strong>开始还款：</strong>{{ startYear }}年{{ startMonth }}月</p>
+          <p><strong>开始还款：</strong>{{ startDate ? startDate.replace('-', '年') + '月' : '' }}</p>
           <p><strong>结束还款：</strong>{{ endYear }}年{{ endMonth }}月</p>
         </div>
 
@@ -275,9 +269,7 @@ export default class HousingFund extends Vue {
 
   loanYears = 20;
 
-  startYear: number = new Date().getFullYear();
-
-  startMonth: number = new Date().getMonth() + 1;
+  startDate = `${new Date().getFullYear()}-${(new Date().getMonth() + 1).toString().padStart(2, '0')}`;
 
   // 利率类型
   rateType = 'fixed';
@@ -329,6 +321,18 @@ export default class HousingFund extends Vue {
   // 计算总月数
   get calculatedTotalMonths(): number {
     return this.loanYears * 12;
+  }
+
+  // 从日期字符串中获取年份
+  get startYear(): number {
+    if (!this.startDate) return new Date().getFullYear();
+    return parseInt(this.startDate.split('-')[0]);
+  }
+
+  // 从日期字符串中获取月份
+  get startMonth(): number {
+    if (!this.startDate) return new Date().getMonth() + 1;
+    return parseInt(this.startDate.split('-')[1]);
   }
 
   // 分页相关方法
