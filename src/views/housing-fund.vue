@@ -19,9 +19,17 @@
         <el-form-item
           label="贷款年限（年）"
           prop="loanYears">
-          <el-input v-model="loanYears"
-                    placeholder="请输入贷款年限"
-                    type="number"></el-input>
+          <el-select v-model="loanYears">
+            <el-option :value="5" label="5年"></el-option>
+            <el-option :value="10"
+                       label="10年"></el-option>
+            <el-option :value="15"
+                       label="15年"></el-option>
+            <el-option :value="20"
+                       label="20年"></el-option>
+            <el-option :value="30"
+                       label="30年"></el-option>
+          </el-select>
         </el-form-item>
 
         <el-form-item
