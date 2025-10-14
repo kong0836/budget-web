@@ -669,8 +669,6 @@ export default class HousingFund extends Vue {
   reset(): void {
     this.loanAmount = 500000;
     this.loanYears = 20;
-    this.startYear = new Date().getFullYear();
-    this.startMonth = new Date().getMonth() + 1;
     this.fixedRate = 3.25;
     this.floatingRates = [{ startMonth: 1, rate: 3.25 }];
     this.prepayments = [{ amount: 0, month: 12, type: 'shorten' }];
