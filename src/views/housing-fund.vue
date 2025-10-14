@@ -1,7 +1,7 @@
 <template>
   <div class="housing-fund">
     <div class="calculator-container">
-      <h3>公积金贷款利息计算器</h3>
+      <h2>公积金贷款利息计算器</h2>
 
       <!-- 基本信息输入 -->
       <el-form
@@ -9,15 +9,17 @@
         :inline="true"
         class="input-section">
         <el-form-item
-          label="贷款总额（元）"
+          label="贷款总额"
           prop="loanAmount">
           <el-input
             v-model="loanAmount"
             placeholder="请输入贷款总额"
-            type="number"/>
+            type="number">
+            <template slot="append">万元</template>
+          </el-input>
         </el-form-item>
 
-        <el-form-item label="贷款年限（年）" prop="loanYears">
+        <el-form-item label="贷款年限" prop="loanYears">
           <el-select v-model="loanYears">
             <el-option
               v-for="item in loadYearOptions"
@@ -72,7 +74,6 @@
                  class="rate-period">
               <el-form-item
                   label="开始日期"
-                  :prop="`floatingRates.${index}.startDate`"
                   :rules="[{required: true, message: '请选择开始日期', trigger: 'blur'}]">
                 <el-date-picker
                   v-model="period.startDate"
@@ -84,7 +85,6 @@
               </el-form-item>
               <el-form-item
                   label="年利率（%）"
-                  :prop="`floatingRates.${index}.rate`"
                   :rules="[{required: true, message: '请输入年利率', trigger: 'blur'}]">
                 <el-input v-model="period.rate"
                           placeholder="如：3.1"
@@ -174,11 +174,13 @@
       <div v-if="showResults" class="results-section">
         <h4>计算结果</h4>
 
+        <!-- 在模板的计算结果部分 -->
         <div class="basic-info">
-          <p><strong>贷款总额：</strong>{{ formatCurrency(loanAmount) }}</p>
-          <p><strong>贷款期限：</strong>{{ loanYears }}年（{{ totalMonths }}个月）</p>
-          <p><strong>开始还款：</strong>{{ startDate ? startDate.replace('-', '年') + '月' : '' }}</p>
-          <p><strong>结束还款：</strong>{{ endYear }}年{{ endMonth }}月</p>
+        <!-- 修改前：<p><strong>贷款总额：</strong>{{ formatCurrency(loanAmount) }}</p> -->
+        <p><strong>贷款总额：</strong>{{ formatCurrency(loanAmount * TEN_THOUSAND) }}</p>
+        <p><strong>贷款期限：</strong>{{ loanYears }}年（{{ totalMonths }}个月）</p>
+        <p><strong>开始还款：</strong>{{ startDate ? startDate.replace('-', '年') + '月' : '' }}</p>
+        <p><strong>结束还款：</strong>{{ endYear }}年{{ endMonth }}月</p>
         </div>
 
         <div class="interest-results">
@@ -199,32 +201,25 @@
           <div class="prepayment-details">
             <h6>每次提前还款详情</h6>
             <el-table :data="prepaymentDetails"
-                      border
-                      style="width: 100%">
+                      border>
               <el-table-column
                 label="序号"
-                prop="index"
-                width="60"></el-table-column>
+                prop="index"></el-table-column>
               <el-table-column
                 label="还款金额"
-                prop="amount"
-                width="120"></el-table-column>
+                prop="amount"></el-table-column>
               <el-table-column
                 label="还款时间"
-                prop="month"
-                width="100"></el-table-column>
+                prop="month"></el-table-column>
               <el-table-column
                 label="还款方式"
-                prop="type"
-                width="120"></el-table-column>
+                prop="type"></el-table-column>
               <el-table-column
                 label="节省利息"
-                prop="saveInterest"
-                width="120"></el-table-column>
+                prop="saveInterest"></el-table-column>
               <el-table-column
                 label="新结束日期"
-                prop="newEndDate"
-                width="120"></el-table-column>
+                prop="newEndDate"></el-table-column>
             </el-table>
           </div>
         </div>
@@ -263,36 +258,28 @@
             <el-table-column
               label="期数"
               prop="month"
-              sortable
-              width="80"></el-table-column>
+              sortable></el-table-column>
             <el-table-column
               label="还款日期"
               prop="date"
-              sortable
-              width="120"></el-table-column>
+              sortable></el-table-column>
             <el-table-column
               label="本金"
               prop="principal"
-              sortable
-              width="120"></el-table-column>
+              sortable></el-table-column>
             <el-table-column
               label="利息"
               prop="interest"
-              sortable
-              width="120"></el-table-column>
+              sortable></el-table-column>
             <el-table-column
               label="月供"
               prop="total"
-              sortable
-              width="120"></el-table-column>
+              sortable></el-table-column>
             <el-table-column
               label="剩余本金"
               prop="remaining"
-              sortable
-              width="120"></el-table-column>
-            <el-table-column
-              label="操作"
-              width="100">
+              sortable></el-table-column>
+            <el-table-column label="操作">
               <template v-slot="{ row }">
                 <el-button
                   size="small"
@@ -302,18 +289,15 @@
               </template>
             </el-table-column>
           </el-table>
-
-          <div class="pagination-container">
-            <el-pagination
-                :current-page="currentPage"
-                :page-size="pageSize"
-                :page-sizes="[12, 24, 50, 100]"
-                :total="filteredSchedule.length"
-                layout="total, sizes, prev, pager, next, jumper"
-                @size-change="handleSizeChange"
-                @current-change="handleCurrentChange">
-            </el-pagination>
-          </div>
+          <el-pagination
+              :current-page="currentPage"
+              :page-size="pageSize"
+              :page-sizes="[12, 24, 50, 100]"
+              :total="filteredSchedule.length"
+              layout="prev, pager, next, sizes, total"
+              @size-change="handleSizeChange"
+              @current-change="handleCurrentChange">
+          </el-pagination>
         </div>
       </div>
     </div>
@@ -323,20 +307,24 @@
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
 
+// 在类的顶部定义常量
 @Component
 export default class HousingFund extends Vue {
+  // 常量定义
+  private TEN_THOUSAND = 10000;
+
   // 基本参数
-  loanAmount = 500000;
+  loanAmount = 50;
 
   loanYears = 30;
 
-loadYearOptions = [
-  { value: 5, label: '5年' },
-  { value: 10, label: '10年' },
-  { value: 15, label: '15年' },
-  { value: 20, label: '20年' },
-  { value: 30, label: '30年' },
-];
+  loadYearOptions = [
+    { value: 5, label: '5年' },
+    { value: 10, label: '10年' },
+    { value: 15, label: '15年' },
+    { value: 20, label: '20年' },
+    { value: 30, label: '30年' },
+  ];
 
   startDate = `${new Date().getFullYear()}-${(new Date().getMonth() + 1).toString().padStart(2, '0')}`;
 
@@ -505,8 +493,10 @@ loadYearOptions = [
   // 计算浮动利率总利息（按日期）
   calculateFloatingInterest(): number {
     let totalInterest = 0;
-    let remainingPrincipal = this.loanAmount;
-    const monthlyPrincipal = this.loanAmount / this.calculatedTotalMonths;
+    // 修改前：let remainingPrincipal = this.loanAmount;
+    let remainingPrincipal = this.loanAmount * this.TEN_THOUSAND;
+    // 修改前：const monthlyPrincipal = this.loanAmount / this.calculatedTotalMonths;
+    const monthlyPrincipal = (this.loanAmount * this.TEN_THOUSAND) / this.calculatedTotalMonths;
 
     // 对利率期间按开始日期排序并转换为期数
     const sortedRates = [...this.floatingRates]
@@ -561,7 +551,8 @@ loadYearOptions = [
     this.prepaymentDetails = [];
     this.totalSaveInterest = 0;
 
-    let currentPrincipal = this.loanAmount;
+    // 修改前：let currentPrincipal = this.loanAmount;
+    let currentPrincipal = this.loanAmount * this.TEN_THOUSAND;
     let currentMonths = this.calculatedTotalMonths;
     let currentMonth = 1;
     let totalSaveInterest = 0;
@@ -646,7 +637,8 @@ loadYearOptions = [
   calculateInterestForPeriod(principal: number, monthlyRate: number, months: number): number {
     let totalInterest = 0;
     let remainingPrincipal = principal;
-    const monthlyPrincipal = principal / (this.calculatedTotalMonths - (this.calculatedTotalMonths - months));
+    // 修改前：const monthlyPrincipal = principal / (this.calculatedTotalMonths - (this.calculatedTotalMonths - months));
+    const monthlyPrincipal = principal / months;
 
     for (let i = 1; i <= months; i++) {
       const monthlyInterest = remainingPrincipal * monthlyRate;
@@ -749,7 +741,9 @@ loadYearOptions = [
     this.calculateEndDate();
 
     // 计算固定利率总利息
-    const fixedResult = this.calculateEqualPrincipal(this.loanAmount, this.fixedRate, this.totalMonths);
+    // ... 现有代码 ...
+  // 修改前：const fixedResult = this.calculateEqualPrincipal(this.loanAmount * 10000, this.fixedRate, this.totalMonths);
+  const fixedResult = this.calculateEqualPrincipal(this.loanAmount * this.TEN_THOUSAND, this.fixedRate, this.totalMonths);
     this.fixedTotalInterest = fixedResult.totalInterest;
     this.repaymentSchedule = fixedResult.schedule;
 
@@ -768,7 +762,7 @@ loadYearOptions = [
 
   // 重置
   reset(): void {
-    this.loanAmount = 500000;
+    this.loanAmount = 50;
     this.loanYears = 30;
     this.fixedRate = 3.1;
     this.startDate = `${new Date().getFullYear()}-${(new Date().getMonth() + 1).toString().padStart(2, '0')}`;
@@ -784,19 +778,19 @@ loadYearOptions = [
 
 <style lang="scss" scoped>
 .housing-fund {
-  height: 100%;
+  height: 100vh;
   padding: 20px;
   background-color: #f5f7fa;
 
   .calculator-container {
-    max-width: 900px;
+    width: 80%;
     margin: 0 auto;
     background: white;
-    padding: 30px;
+    padding: 10px 30px;
     border-radius: 8px;
     box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
 
-    h3 {
+    h2 {
       text-align: center;
       color: #409eff;
       margin-bottom: 30px;
@@ -897,8 +891,8 @@ loadYearOptions = [
           margin-bottom: 15px;
         }
 
-        .pagination-container {
-          margin-top: 15px;
+        .el-pagination {
+          margin-top: 10px;
           text-align: center;
         }
       }
