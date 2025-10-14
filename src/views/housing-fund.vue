@@ -4,23 +4,23 @@
       <h3>公积金贷款利息计算器</h3>
 
       <!-- 基本信息输入 -->
-      <div class="input-section">
-        <div class="form-group">
-          <label>贷款总额（元）</label>
+      <el-form
+        ref="basicForm"
+        :inline="false"
+        class="input-section">
+        <el-form-item label="贷款总额（元）" prop="loanAmount">
           <el-input v-model="loanAmount"
                     placeholder="请输入贷款总额"
                     type="number"></el-input>
-        </div>
+        </el-form-item>
 
-        <div class="form-group">
-          <label>贷款年限（年）</label>
+        <el-form-item label="贷款年限（年）" prop="loanYears">
           <el-input v-model="loanYears"
                     placeholder="请输入贷款年限"
                     type="number"></el-input>
-        </div>
+        </el-form-item>
 
-        <div class="form-group">
-          <label>首次还款日期</label>
+        <el-form-item label="首次还款日期" prop="startDate">
           <el-date-picker
             v-model="startDate"
             type="month"
@@ -28,111 +28,128 @@
             format="yyyy年MM月"
             value-format="yyyy-MM">
           </el-date-picker>
-        </div>
-      </div>
+        </el-form-item>
+      </el-form>
 
-      <!-- 利率设置 -->
-      <div class="rate-section">
-        <h4>利率设置</h4>
-        <el-radio-group v-model="rateType">
-          <el-radio label="fixed">固定利率</el-radio>
-          <el-radio label="floating">浮动利率</el-radio>
-        </el-radio-group>
+      <!-- 利率设置 - 使用单独的表单 -->
+      <el-card
+        class="rate-section-card">
+        <el-form ref="rateForm"
+:inline="false"
+class="rate-section">
+          <el-form-item label="利率类型" prop="rateType">
+            <el-radio-group v-model="rateType">
+              <el-radio label="fixed">固定利率</el-radio>
+              <el-radio label="floating">浮动利率</el-radio>
+            </el-radio-group>
+          </el-form-item>
 
-        <div v-if="rateType === 'fixed'" class="form-group">
-          <label>年利率（%）</label>
-          <el-input v-model="fixedRate"
-                    placeholder="如：3.25"
-                    type="number"></el-input>
-        </div>
+          <el-form-item v-if="rateType === 'fixed'"
+label="年利率（%）"
+prop="fixedRate">
+            <el-input v-model="fixedRate"
+                      placeholder="如：3.25"
+                      type="number"></el-input>
+          </el-form-item>
 
-        <div v-if="rateType === 'floating'" class="floating-rates">
-          <div v-for="(period, index) in floatingRates"
-               :key="index"
-               class="rate-period">
-            <div class="form-group">
-              <label>开始期数</label>
-              <el-input v-model="period.startMonth"
-                        :max="calculatedTotalMonths"
-                        :min="1"
-                        placeholder="如：1"
-                        type="number"></el-input>
+          <el-form-item
+            v-if="rateType === 'floating'"
+            label="浮动利率设置"
+            class="floating-rates-form">
+            <div v-for="(period, index) in floatingRates"
+                 :key="index"
+                 class="rate-period">
+              <el-form-item
+                  label="开始期数"
+                  :prop="`floatingRates.${index}.startMonth`"
+                  :rules="[{required: true, message: '请输入开始期数', trigger: 'blur'}]">
+                <el-input v-model="period.startMonth"
+                          :max="calculatedTotalMonths"
+                          :min="1"
+                          placeholder="如：1"
+                          type="number"></el-input>
+              </el-form-item>
+              <el-form-item
+                  label="年利率（%）"
+                  :prop="`floatingRates.${index}.rate`"
+                  :rules="[{required: true, message: '请输入年利率', trigger: 'blur'}]">
+                <el-input v-model="period.rate"
+                          placeholder="如：3.25"
+                          type="number"></el-input>
+              </el-form-item>
+              <el-form-item>
+                <el-button v-if="floatingRates.length > 1"
+                           size="small"
+                           type="danger"
+                           @click="removeRatePeriod(index)">删除
+                </el-button>
+              </el-form-item>
             </div>
-            <div class="form-group">
-              <label>年利率（%）</label>
-              <el-input v-model="period.rate"
-                        placeholder="如：3.25"
-                        type="number"></el-input>
-            </div>
-            <el-button v-if="floatingRates.length > 1"
-                       size="small"
-                       type="danger"
-                       @click="removeRatePeriod(index)">删除
+            <el-button size="small"
+                       type="primary"
+                       @click="addRatePeriod">添加利率期间
             </el-button>
-          </div>
-          <el-button size="small"
-                     type="primary"
-                     @click="addRatePeriod">添加利率期间
-          </el-button>
-          <p class="rate-tip">提示：可以设置多个利率期间，每个期间指定开始期数和对应的年利率</p>
-        </div>
-      </div>
+            <p class="rate-tip">提示：可以设置多个利率期间，每个期间指定开始期数和对应的年利率</p>
+          </el-form-item>
+        </el-form>
+      </el-card>
 
-      <!-- 多次提前还款设置 -->
-      <div class="prepayment-section">
-        <h4>提前还款设置（可选）</h4>
-        <div class="prepayment-list">
-          <div v-for="(prepayment, index) in prepayments"
-               :key="index"
-               class="prepayment-item">
-            <div class="prepayment-header">
-              <h5>第{{ index + 1 }}次提前还款</h5>
-              <el-button v-if="prepayments.length > 1"
-                         size="small"
-                         type="danger"
-                         @click="removePrepayment(index)">删除
-              </el-button>
-            </div>
-            <div class="prepayment-form">
-              <div class="form-group">
-                <label>还款金额（元）</label>
+      <!-- 多次提前还款设置 - 使用单独的表单 -->
+      <el-card
+        class="prepayment-section-card">
+        <el-form ref="prepaymentForm"
+:inline="false"
+class="prepayment-section">
+          <div class="prepayment-list">
+            <div v-for="(prepayment, index) in prepayments"
+                 :key="index"
+                 class="prepayment-item">
+              <div class="prepayment-header">
+                <h5>第{{ index + 1 }}次提前还款</h5>
+                <el-button v-if="prepayments.length > 1"
+                           size="small"
+                           type="danger"
+                           @click="removePrepayment(index)">删除
+                </el-button>
+              </div>
+              <el-form-item label="还款金额（元）" :prop="`prepayments.${index}.amount`">
                 <el-input v-model="prepayment.amount"
                           placeholder="请输入还款金额"
                           type="number"></el-input>
-              </div>
-              <div class="form-group">
-                <label>还款时间（还款后第几个月）</label>
+              </el-form-item>
+              <el-form-item label="还款时间（还款后第几个月）" :prop="`prepayments.${index}.month`">
                 <el-input v-model="prepayment.month"
                           placeholder="如：12"
                           type="number"></el-input>
-              </div>
-              <div class="form-group">
-                <label>还款方式</label>
+              </el-form-item>
+              <el-form-item label="还款方式" :prop="`prepayments.${index}.type`">
                 <el-radio-group v-model="prepayment.type">
                   <el-radio label="shorten">缩短还款期限</el-radio>
                   <el-radio label="reduce">减少月供金额</el-radio>
                 </el-radio-group>
-              </div>
+              </el-form-item>
             </div>
+            <el-button size="small"
+                       type="primary"
+                       @click="addPrepayment">添加提前还款
+            </el-button>
           </div>
-          <el-button size="small"
-                     type="primary"
-                     @click="addPrepayment">添加提前还款
-          </el-button>
-        </div>
-      </div>
+        </el-form>
+      </el-card>
 
       <!-- 计算按钮 -->
-      <div class="action-section">
-        <el-button size="large"
-                   type="primary"
-                   @click="calculate">计算
-        </el-button>
-        <el-button size="large"
-                   type="default"
-                   @click="reset">重置
-        </el-button>
-      </div>
+      <el-row class="action-section">
+        <el-col :span="24" class="text-center">
+          <el-button size="large"
+                     type="primary"
+                     @click="calculate">计算
+          </el-button>
+          <el-button size="large"
+                     type="default"
+                     @click="reset">重置
+          </el-button>
+        </el-col>
+      </el-row>
 
       <!-- 计算结果 -->
       <div v-if="showResults" class="results-section">
@@ -233,10 +250,11 @@
                              sortable
                              width="120"></el-table-column>
             <el-table-column label="操作" width="100">
-              <template slot-scope="scope">
-                <el-button size="small"
-                           type="text"
-                           @click="viewDetail(scope.row)">详情
+              <template v-slot="{ row }">
+                <el-button
+                  size="small"
+                  type="text"
+                  @click="viewDetail(row)">详情
                 </el-button>
               </template>
             </el-table-column>
@@ -700,53 +718,41 @@ export default class HousingFund extends Vue {
       margin-bottom: 30px;
     }
 
-    .input-section, .rate-section, .prepayment-section {
+    .input-section {
       margin-bottom: 30px;
+    }
 
-      h4 {
-        color: #606266;
+    .rate-section-card,
+    .prepayment-section-card {
+      margin-bottom: 30px;
+    }
+
+    .rate-section {
+      .rate-period {
+        display: grid;
+        grid-template-columns: 1fr 1fr auto;
+        gap: 10px;
+        align-items: end;
         margin-bottom: 15px;
+        padding: 15px;
+        border: 1px solid #ebeef5;
+        border-radius: 4px;
       }
 
-      .form-group {
-        margin-bottom: 15px;
-
-        label {
-          display: block;
-          margin-bottom: 5px;
-          color: #606266;
-          font-weight: 500;
-        }
+      .rate-tip {
+        font-size: 12px;
+        color: #909399;
+        margin-top: 5px;
       }
 
-      .floating-rates {
-        .rate-period {
-          display: grid;
-          grid-template-columns: 1fr 1fr auto;
-          gap: 10px;
-          align-items: end;
-          margin-bottom: 15px;
-          padding: 15px;
-          border: 1px solid #ebeef5;
-          border-radius: 4px;
-
-          .form-group {
-            margin-bottom: 0;
-          }
-        }
-
-        .rate-tip {
-          font-size: 12px;
-          color: #909399;
-          margin-top: 5px;
-        }
+      .floating-rates-form {
+        width: 100%;
       }
+    }
 
+    .prepayment-section {
       .prepayment-list {
         .prepayment-item {
-          border: 1px solid #ebeef5;
-          border-radius: 4px;
-          padding: 15px;
           margin-bottom: 15px;
 
           .prepayment-header {
@@ -760,22 +766,11 @@ export default class HousingFund extends Vue {
               color: #409eff;
             }
           }
-
-          .prepayment-form {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-
-            .form-group:last-child {
-              grid-column: 1 / -1;
-            }
-          }
         }
       }
     }
 
     .action-section {
-      text-align: center;
       margin: 30px 0;
 
       .el-button {
