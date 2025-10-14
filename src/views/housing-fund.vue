@@ -11,24 +11,19 @@
         <el-form-item
           label="贷款总额（元）"
           prop="loanAmount">
-          <el-input v-model="loanAmount"
-                    placeholder="请输入贷款总额"
-                    type="number"></el-input>
+          <el-input
+            v-model="loanAmount"
+            placeholder="请输入贷款总额"
+            type="number"/>
         </el-form-item>
 
-        <el-form-item
-          label="贷款年限（年）"
-          prop="loanYears">
+        <el-form-item label="贷款年限（年）" prop="loanYears">
           <el-select v-model="loanYears">
-            <el-option :value="5" label="5年"></el-option>
-            <el-option :value="10"
-                       label="10年"></el-option>
-            <el-option :value="15"
-                       label="15年"></el-option>
-            <el-option :value="20"
-                       label="20年"></el-option>
-            <el-option :value="30"
-                       label="30年"></el-option>
+            <el-option
+              v-for="item in loadYearOptions"
+              :key="item.value"
+              :value="item.value"
+              :label="item.label"/>
           </el-select>
         </el-form-item>
 
@@ -64,7 +59,7 @@
                         label="年利率（%）"
                         prop="fixedRate">
             <el-input v-model="fixedRate"
-                      placeholder="如：3.25"
+                      placeholder="如：3.1"
                       type="number"></el-input>
           </el-form-item>
 
@@ -90,7 +85,7 @@
                   :prop="`floatingRates.${index}.rate`"
                   :rules="[{required: true, message: '请输入年利率', trigger: 'blur'}]">
                 <el-input v-model="period.rate"
-                          placeholder="如：3.25"
+                          placeholder="如：3.1"
                           type="number"></el-input>
               </el-form-item>
               <el-form-item>
@@ -331,18 +326,26 @@ export default class HousingFund extends Vue {
   // 基本参数
   loanAmount = 500000;
 
-  loanYears = 20;
+  loanYears = 30;
+
+loadYearOptions = [
+  { value: 5, label: '5年' },
+  { value: 10, label: '10年' },
+  { value: 15, label: '15年' },
+  { value: 20, label: '20年' },
+  { value: 30, label: '30年' },
+];
 
   startDate = `${new Date().getFullYear()}-${(new Date().getMonth() + 1).toString().padStart(2, '0')}`;
 
   // 利率类型
   rateType = 'fixed';
 
-  fixedRate = 3.25;
+  fixedRate = 3.1;
 
   // 浮动利率设置（按期数）
   floatingRates: Array<{ startMonth: number, rate: number }> = [
-    { startMonth: 1, rate: 3.25 }
+    { startMonth: 1, rate: 3.1 }
   ];
 
   // 多次提前还款设置
@@ -430,7 +433,7 @@ export default class HousingFund extends Vue {
     const nextMonth = lastPeriod.startMonth + 12; // 默认间隔12个月
     this.floatingRates.push({
       startMonth: nextMonth,
-      rate: 3.25
+      rate: 3.1
     });
   }
 
@@ -732,9 +735,9 @@ export default class HousingFund extends Vue {
   // 重置
   reset(): void {
     this.loanAmount = 500000;
-    this.loanYears = 20;
-    this.fixedRate = 3.25;
-    this.floatingRates = [{ startMonth: 1, rate: 3.25 }];
+    this.loanYears = 30;
+    this.fixedRate = 3.1;
+    this.floatingRates = [{ startMonth: 1, rate: 3.1 }];
     this.prepayments = [{ amount: 0, month: 12, type: 'shorten' }];
     this.showResults = false;
     this.currentPage = 1;
