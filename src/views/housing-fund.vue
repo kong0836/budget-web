@@ -6,21 +6,27 @@
       <!-- 基本信息输入 -->
       <el-form
         ref="basicForm"
-        :inline="false"
+        :inline="true"
         class="input-section">
-        <el-form-item label="贷款总额（元）" prop="loanAmount">
+        <el-form-item
+          label="贷款总额（元）"
+          prop="loanAmount">
           <el-input v-model="loanAmount"
                     placeholder="请输入贷款总额"
                     type="number"></el-input>
         </el-form-item>
 
-        <el-form-item label="贷款年限（年）" prop="loanYears">
+        <el-form-item
+          label="贷款年限（年）"
+          prop="loanYears">
           <el-input v-model="loanYears"
                     placeholder="请输入贷款年限"
                     type="number"></el-input>
         </el-form-item>
 
-        <el-form-item label="首次还款日期" prop="startDate">
+        <el-form-item
+          label="首次还款日期"
+          prop="startDate">
           <el-date-picker
             v-model="startDate"
             type="month"
@@ -35,9 +41,11 @@
       <el-card
         class="rate-section-card">
         <el-form ref="rateForm"
-:inline="false"
-class="rate-section">
-          <el-form-item label="利率类型" prop="rateType">
+                 :inline="true"
+                 class="rate-section">
+          <el-form-item
+            label="利率类型"
+            prop="rateType">
             <el-radio-group v-model="rateType">
               <el-radio label="fixed">固定利率</el-radio>
               <el-radio label="floating">浮动利率</el-radio>
@@ -45,8 +53,8 @@ class="rate-section">
           </el-form-item>
 
           <el-form-item v-if="rateType === 'fixed'"
-label="年利率（%）"
-prop="fixedRate">
+                        label="年利率（%）"
+                        prop="fixedRate">
             <el-input v-model="fixedRate"
                       placeholder="如：3.25"
                       type="number"></el-input>
@@ -98,8 +106,8 @@ prop="fixedRate">
       <el-card
         class="prepayment-section-card">
         <el-form ref="prepaymentForm"
-:inline="false"
-class="prepayment-section">
+                 :inline="true"
+                 class="prepayment-section">
           <div class="prepayment-list">
             <div v-for="(prepayment, index) in prepayments"
                  :key="index"
@@ -112,17 +120,23 @@ class="prepayment-section">
                            @click="removePrepayment(index)">删除
                 </el-button>
               </div>
-              <el-form-item label="还款金额（元）" :prop="`prepayments.${index}.amount`">
+              <el-form-item
+                label="还款金额（元）"
+                :prop="`prepayments.${index}.amount`">
                 <el-input v-model="prepayment.amount"
                           placeholder="请输入还款金额"
                           type="number"></el-input>
               </el-form-item>
-              <el-form-item label="还款时间（还款后第几个月）" :prop="`prepayments.${index}.month`">
+              <el-form-item
+                label="还款时间（还款后第几个月）"
+                :prop="`prepayments.${index}.month`">
                 <el-input v-model="prepayment.month"
                           placeholder="如：12"
                           type="number"></el-input>
               </el-form-item>
-              <el-form-item label="还款方式" :prop="`prepayments.${index}.type`">
+              <el-form-item
+                label="还款方式"
+                :prop="`prepayments.${index}.type`">
                 <el-radio-group v-model="prepayment.type">
                   <el-radio label="shorten">缩短还款期限</el-radio>
                   <el-radio label="reduce">减少月供金额</el-radio>
@@ -182,24 +196,30 @@ class="prepayment-section">
             <el-table :data="prepaymentDetails"
                       border
                       style="width: 100%">
-              <el-table-column label="序号"
-                               prop="index"
-                               width="60"></el-table-column>
-              <el-table-column label="还款金额"
-                               prop="amount"
-                               width="120"></el-table-column>
-              <el-table-column label="还款时间"
-                               prop="month"
-                               width="100"></el-table-column>
-              <el-table-column label="还款方式"
-                               prop="type"
-                               width="120"></el-table-column>
-              <el-table-column label="节省利息"
-                               prop="saveInterest"
-                               width="120"></el-table-column>
-              <el-table-column label="新结束日期"
-                               prop="newEndDate"
-                               width="120"></el-table-column>
+              <el-table-column
+                label="序号"
+                prop="index"
+                width="60"></el-table-column>
+              <el-table-column
+                label="还款金额"
+                prop="amount"
+                width="120"></el-table-column>
+              <el-table-column
+                label="还款时间"
+                prop="month"
+                width="100"></el-table-column>
+              <el-table-column
+                label="还款方式"
+                prop="type"
+                width="120"></el-table-column>
+              <el-table-column
+                label="节省利息"
+                prop="saveInterest"
+                width="120"></el-table-column>
+              <el-table-column
+                label="新结束日期"
+                prop="newEndDate"
+                width="120"></el-table-column>
             </el-table>
           </div>
         </div>
@@ -207,17 +227,27 @@ class="prepayment-section">
         <div class="repayment-schedule">
           <h5>完整还款计划</h5>
           <div class="schedule-controls">
-            <el-input v-model="searchTerm"
-                      clearable
-                      placeholder="搜索期数或日期"
-                      style="width: 200px; margin-right: 10px;"></el-input>
-            <el-select v-model="pageSize"
-                       placeholder="每页显示条数"
-                       style="width: 120px;">
-              <el-option :value="12" label="12条"></el-option>
-              <el-option :value="24" label="24条"></el-option>
-              <el-option :value="50" label="50条"></el-option>
-              <el-option :value="100" label="100条"></el-option>
+            <el-input
+              v-model="searchTerm"
+              clearable
+              placeholder="搜索期数或日期"
+              style="width: 200px; margin-right: 10px;"></el-input>
+            <el-select
+              v-model="pageSize"
+              placeholder="每页显示条数"
+              style="width: 120px;">
+              <el-option
+                :value="12"
+                label="12条"></el-option>
+              <el-option
+                :value="24"
+                label="24条"></el-option>
+              <el-option
+                :value="50"
+                label="50条"></el-option>
+              <el-option
+                :value="100"
+                label="100条"></el-option>
             </el-select>
           </div>
 
@@ -225,31 +255,39 @@ class="prepayment-section">
                     :default-sort="{prop: 'month', order: 'ascending'}"
                     border
                     style="width: 100%; margin-top: 15px;">
-            <el-table-column label="期数"
-                             prop="month"
-                             sortable
-                             width="80"></el-table-column>
-            <el-table-column label="还款日期"
-                             prop="date"
-                             sortable
-                             width="120"></el-table-column>
-            <el-table-column label="本金"
-                             prop="principal"
-                             sortable
-                             width="120"></el-table-column>
-            <el-table-column label="利息"
-                             prop="interest"
-                             sortable
-                             width="120"></el-table-column>
-            <el-table-column label="月供"
-                             prop="total"
-                             sortable
-                             width="120"></el-table-column>
-            <el-table-column label="剩余本金"
-                             prop="remaining"
-                             sortable
-                             width="120"></el-table-column>
-            <el-table-column label="操作" width="100">
+            <el-table-column
+              label="期数"
+              prop="month"
+              sortable
+              width="80"></el-table-column>
+            <el-table-column
+              label="还款日期"
+              prop="date"
+              sortable
+              width="120"></el-table-column>
+            <el-table-column
+              label="本金"
+              prop="principal"
+              sortable
+              width="120"></el-table-column>
+            <el-table-column
+              label="利息"
+              prop="interest"
+              sortable
+              width="120"></el-table-column>
+            <el-table-column
+              label="月供"
+              prop="total"
+              sortable
+              width="120"></el-table-column>
+            <el-table-column
+              label="剩余本金"
+              prop="remaining"
+              sortable
+              width="120"></el-table-column>
+            <el-table-column
+              label="操作"
+              width="100">
               <template v-slot="{ row }">
                 <el-button
                   size="small"
