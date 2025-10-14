@@ -71,14 +71,16 @@
                  :key="index"
                  class="rate-period">
               <el-form-item
-                  label="开始期数"
-                  :prop="`floatingRates.${index}.startMonth`"
-                  :rules="[{required: true, message: '请输入开始期数', trigger: 'blur'}]">
-                <el-input v-model="period.startMonth"
-                          :max="calculatedTotalMonths"
-                          :min="1"
-                          placeholder="如：1"
-                          type="number"></el-input>
+                  label="开始日期"
+                  :prop="`floatingRates.${index}.startDate`"
+                  :rules="[{required: true, message: '请选择开始日期', trigger: 'blur'}]">
+                <el-date-picker
+                  v-model="period.startDate"
+                  type="month"
+                  placeholder="选择开始年月"
+                  format="yyyy年MM月"
+                  value-format="yyyy-MM">
+                </el-date-picker>
               </el-form-item>
               <el-form-item
                   label="年利率（%）"
@@ -100,7 +102,7 @@
                        type="primary"
                        @click="addRatePeriod">添加利率期间
             </el-button>
-            <p class="rate-tip">提示：可以设置多个利率期间，每个期间指定开始期数和对应的年利率</p>
+            <p class="rate-tip">提示：可以设置多个利率期间，每个期间指定开始日期和对应的年利率</p>
           </el-form-item>
         </el-form>
       </el-card>
@@ -344,8 +346,8 @@ loadYearOptions = [
   fixedRate = 3.1;
 
   // 浮动利率设置（按期数）
-  floatingRates: Array<{ startMonth: number, rate: number }> = [
-    { startMonth: 1, rate: 3.1 }
+  floatingRates: Array<{ startDate: string, rate: number }> = [
+    { startDate: `${new Date().getFullYear()}-${(new Date().getMonth() + 1).toString().padStart(2, '0')}`, rate: 3.1 }
   ];
 
   // 多次提前还款设置
@@ -430,9 +432,12 @@ loadYearOptions = [
   // 添加利率期间
   addRatePeriod(): void {
     const lastPeriod = this.floatingRates[this.floatingRates.length - 1];
-    const nextMonth = lastPeriod.startMonth + 12; // 默认间隔12个月
+    const [year, month] = lastPeriod.startDate.split('-').map(Number);
+    const nextDate = new Date(year, month);
+    nextDate.setMonth(nextDate.getMonth() + 12); // 默认间隔12个月
+    const nextDateStr = `${nextDate.getFullYear()}-${(nextDate.getMonth() + 1).toString().padStart(2, '0')}`;
     this.floatingRates.push({
-      startMonth: nextMonth,
+      startDate: nextDateStr,
       rate: 3.1
     });
   }
@@ -497,14 +502,29 @@ loadYearOptions = [
     return `${year}年${month}月`;
   }
 
-  // 计算浮动利率总利息（按期数）
+  // 计算浮动利率总利息（按日期）
   calculateFloatingInterest(): number {
     let totalInterest = 0;
     let remainingPrincipal = this.loanAmount;
     const monthlyPrincipal = this.loanAmount / this.calculatedTotalMonths;
 
-    // 对利率期间按开始期数排序
-    const sortedRates = [...this.floatingRates].sort((a, b) => a.startMonth - b.startMonth);
+    // 对利率期间按开始日期排序并转换为期数
+    const sortedRates = [...this.floatingRates]
+      .filter(period => period.startDate && period.rate > 0)
+      .sort((a, b) => {
+        const monthA = this.convertDateToMonthIndex(a.startDate);
+        const monthB = this.convertDateToMonthIndex(b.startDate);
+        return monthA - monthB;
+      })
+      .map(period => ({
+        startMonth: this.convertDateToMonthIndex(period.startDate),
+        rate: period.rate
+      }));
+
+    // 如果没有有效的利率期间，返回0
+    if (sortedRates.length === 0) {
+      return 0;
+    }
 
     // 按利率期间计算（按期数）
     for (let i = 0; i < sortedRates.length; i++) {
@@ -678,6 +698,21 @@ loadYearOptions = [
     return '¥' + amount.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
   }
 
+  // 将日期转换为期数
+  convertDateToMonthIndex(dateStr: string): number {
+    if (!dateStr) return 1;
+
+    const [year, month] = dateStr.split('-').map(Number);
+    const startYear = this.startYear;
+    const startMonth = this.startMonth;
+
+    // 计算从开始日期到指定日期的月数差
+    const monthDiff = (year - startYear) * 12 + (month - startMonth) + 1;
+
+    // 确保至少为第1期
+    return Math.max(1, monthDiff);
+  }
+
   handleSizeChange(val: number): void {
     this.pageSize = val;
     this.currentPage = 1;
@@ -703,12 +738,11 @@ loadYearOptions = [
     }
 
     // 验证浮动利率设置
-    if (this.rateType === 'floating') {
-      const validRates = this.floatingRates.filter(period => period.startMonth > 0 && period.rate > 0);
-      if (validRates.length === 0) {
-        this.$message.error('请至少设置一个有效的浮动利率期间');
-        return;
-      }
+    const validRates = this.floatingRates.filter(period => period.startDate && period.rate > 0);
+
+    if (validRates.length === 0) {
+      this.$message.error('请至少设置一个有效的浮动利率期间');
+      return;
     }
 
     this.totalMonths = this.calculatedTotalMonths;
@@ -737,7 +771,8 @@ loadYearOptions = [
     this.loanAmount = 500000;
     this.loanYears = 30;
     this.fixedRate = 3.1;
-    this.floatingRates = [{ startMonth: 1, rate: 3.1 }];
+    this.startDate = `${new Date().getFullYear()}-${(new Date().getMonth() + 1).toString().padStart(2, '0')}`;
+    this.floatingRates = [{ startDate: this.startDate, rate: 3.1 }];
     this.prepayments = [{ amount: 0, month: 12, type: 'shorten' }];
     this.showResults = false;
     this.currentPage = 1;

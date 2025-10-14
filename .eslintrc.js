@@ -44,11 +44,11 @@ module.exports = {
     'template-curly-spacing': ['error', 'never'], // 模板字符串花括号内侧不添加空格
     'space-before-function-paren': ['error', 'never'], // 函数括号前不添加空格
     '@typescript-eslint/no-explicit-any': 'off',  // 关闭 any 类型的检查
-    //  'no-multiple-empty-lines': ['error', {
-    //     max: 0,        // 最大连续空行数
-    //     maxEOF: 1,     // 文件末尾最大空行数
-    //     maxBOF: 0      // 文件开头最大空行数
-    // }],
+     'no-multiple-empty-lines': ['error', {
+        max: 1,        // 最大连续空行数
+        maxEOF: 1,     // 文件末尾最大空行数
+        maxBOF: 0      // 文件开头最大空行数
+    }],
    'no-trailing-spaces': ['error', {
       skipBlankLines: false,  // 是否跳过空行
       ignoreComments: false   // 是否忽略注释行

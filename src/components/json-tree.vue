@@ -73,7 +73,6 @@ export default class JsonTree extends Vue {
 
   clickedPath= ""
 
-
   @Watch('selectedTheme')
   onThemeChange() {
     // 当主题改变时，重新渲染 JSON 树
