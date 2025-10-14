@@ -25,10 +25,10 @@ module.exports = {
       singleline: 'never',
       multiline: 'never'
     }],
-    // 添加属性数量换行规则
+    // HTML标签属性换行规则：属性≥3个时每个属性换行展示，否则建议在一行内展示
     'vue/max-attributes-per-line': ['error', {
       singleline: 2,  // 单行最多2个属性
-      multiline: { max: 1 }  // 多行时每行1个属性
+      multiline: 1    // 多行时每行1个属性
     }],
     // 强制语句结尾使用分号
     'semi': ['error', 'always'],
