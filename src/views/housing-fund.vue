@@ -4,39 +4,37 @@
       <div class="calculator-header">公积金贷款利息计算器</div>
 
       <h3>基本信息</h3>
-      <el-card>
-        <el-form
-          :model="basicForm"
-          ref="basicForm"
-          :label-width="LABEL_WIDTH">
-          <el-form-item label="贷款总额" prop="loanAmount">
-            <el-input
-              v-model="loanAmount"
-              placeholder="请输入贷款总额"
-              type="number">
-              <template slot="append">万元</template>
-            </el-input>
-          </el-form-item>
-          <el-form-item label="贷款年限" prop="loanYears">
-            <el-select v-model="loanYears">
-              <el-option
-                v-for="item in loadYearOptions"
-                :key="item.value"
-                :value="item.value"
-                :label="item.label"/>
-            </el-select>
-          </el-form-item>
-          <el-form-item label="首次还款日期" prop="startDate">
-            <el-date-picker
-              v-model="startDate"
-              type="month"
-              placeholder="选择还款年月"
-              format="yyyy年MM月"
-              value-format="yyyy-MM">
-            </el-date-picker>
-          </el-form-item>
-        </el-form>
-      </el-card>
+      <el-form
+        :model="basicForm"
+        ref="basicForm"
+        :label-width="LABEL_WIDTH">
+        <el-form-item label="贷款总额" prop="loanAmount">
+          <el-input
+            v-model="loanAmount"
+            placeholder="请输入贷款总额"
+            type="number">
+            <template slot="append">万元</template>
+          </el-input>
+        </el-form-item>
+        <el-form-item label="贷款年限" prop="loanYears">
+          <el-select v-model="loanYears">
+            <el-option
+              v-for="item in loadYearOptions"
+              :key="item.value"
+              :value="item.value"
+              :label="item.label"/>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="首次还款日期" prop="startDate">
+          <el-date-picker
+            v-model="startDate"
+            type="month"
+            placeholder="选择还款年月"
+            format="yyyy年MM月"
+            value-format="yyyy-MM">
+          </el-date-picker>
+        </el-form-item>
+      </el-form>
 
       <h3>利率设置</h3>
       <el-button type="primary" @click="addRateRow">添加利率行</el-button>
