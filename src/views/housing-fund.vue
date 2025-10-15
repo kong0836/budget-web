@@ -37,7 +37,10 @@
       </el-form>
 
       <h3>利率设置</h3>
-      <el-button type="primary" @click="addRateRow">添加利率行</el-button>
+      <el-button
+        type="primary"
+        size="small"
+        @click="addRateRow">添加利率行</el-button>
       <el-table
         :data="rateList"
         border
@@ -83,7 +86,10 @@
       </el-table>
 
       <h3>提前还款设置</h3>
-      <el-button type="primary" @click="addPrepayment">添加提前还款</el-button>
+      <el-button
+        type="primary"
+        size="small"
+        @click="addPrepayment">添加提前还款</el-button>
       <el-table
         :data="prepayments"
         border
@@ -127,11 +133,11 @@
       <!-- 计算按钮 -->
       <el-row class="action-section">
         <el-col :span="24" class="text-center">
-          <el-button size="large"
+          <el-button size="small"
                      type="primary"
                      @click="calculate">计算
           </el-button>
-          <el-button size="large"
+          <el-button size="small"
                      type="default"
                      @click="reset">重置
           </el-button>
