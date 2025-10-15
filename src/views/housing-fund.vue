@@ -102,12 +102,23 @@
               type="number"/>
           </template>
         </el-table-column>
-        <el-table-column label="还款时间（还款后第几个月）" prop="month">
+        <el-table-column label="还款时间" prop="repaymentDate">
           <template v-slot="{row}">
-            <el-input
-              v-model="row.month"
-              placeholder="如：12"
-              type="number"/>
+            <el-date-picker
+              v-model="row.repaymentDate"
+              type="month"
+              placeholder="选择还款年月"
+              format="yyyy年MM月"
+              value-format="yyyy-MM"
+              @change="updatePrepaymentMonth(row)"/>
+          </template>
+        </el-table-column>
+        <el-table-column
+          label="对应期数"
+          prop="month"
+          width="100">
+          <template v-slot="{row}">
+            <span>{{ row.month || '-' }}</span>
           </template>
         </el-table-column>
         <el-table-column label="还款方式" prop="type">
@@ -327,8 +338,8 @@ export default class HousingFund extends Vue {
   ];
 
   // 多次提前还款设置
-  prepayments: Array<{ amount: number, month: number, type: string }> = [
-    { amount: 10000, month: 12, type: 'shorten' }
+  prepayments: Array<{ amount: number, repaymentDate: string, month: number, type: string }> = [
+    { amount: 10000, repaymentDate: '', month: 12, type: 'shorten' }
   ];
 
   // 计算结果
@@ -440,12 +451,35 @@ export default class HousingFund extends Vue {
   // 添加提前还款
   addPrepayment(): void {
     const lastPrepayment = this.prepayments[this.prepayments.length - 1];
-    const nextMonth = lastPrepayment.month + 12;
+    const currentDate = new Date();
+    const nextDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + 12, 1);
+
     this.prepayments.push({
       amount: 0,
-      month: nextMonth,
+      repaymentDate: '',
+      month: 0,
       type: 'shorten'
     });
+  }
+
+  // 更新提前还款期数
+  updatePrepaymentMonth(row: any): void {
+    if (row.repaymentDate && this.startDate) {
+      row.month = this.calculatePrepaymentMonth(row.repaymentDate);
+    }
+  }
+
+  // 计算提前还款对应的期数
+  calculatePrepaymentMonth(repaymentDateStr: string): number {
+    if (!repaymentDateStr || !this.startDate) return 0;
+
+    const [startYear, startMonth] = this.startDate.split('-').map(Number);
+    const [repayYear, repayMonth] = repaymentDateStr.split('-').map(Number);
+
+    // 计算从开始日期到提前还款日期的月数差
+    const monthDiff = (repayYear - startYear) * 12 + (repayMonth - startMonth) + 1;
+
+    return Math.max(1, monthDiff);
   }
 
   // 删除提前还款
@@ -544,8 +578,6 @@ export default class HousingFund extends Vue {
     const validPrepayments = this.prepayments
         .filter(p => p.amount > 0 && p.month > 0)
         .sort((a, b) => a.month - b.month);
-
-    if (validPrepayments.length === 0) return;
 
     this.prepaymentTotalAmount = validPrepayments.reduce((sum, p) => sum + p.amount, 0);
     this.prepaymentDetails = [];
@@ -769,7 +801,7 @@ export default class HousingFund extends Vue {
     this.fixedRate = 3.1;
     this.startDate = `${new Date().getFullYear()}-${(new Date().getMonth() + 1).toString().padStart(2, '0')}`;
     this.floatingRates = [{ startDate: this.startDate, rate: 3.1 }];
-    this.prepayments = [{ amount: 0, month: 12, type: 'shorten' }];
+    this.prepayments = [{ amount: 0, repaymentDate: '', month: 0, type: 'shorten' }];
     this.showResults = false;
     this.currentPage = 1;
     this.pageSize = 12;
