@@ -72,49 +72,59 @@
               type="number"/>
           </template>
         </el-table-column>
+        <el-table-column label="操作" width="80">
+          <template v-slot="{$index}">
+            <el-button
+              v-if="rateList.length > 1"
+              size="small"
+              type="text"
+              @click="removeRateRow($index)">删除
+            </el-button>
+          </template>
+        </el-table-column>
       </el-table>
 
       <h3>提前还款设置</h3>
-      <el-card
-        class="prepayment-section-card">
-        <el-form ref="prepaymentForm" :label-width="LABEL_WIDTH">
-          <div class="prepayment-list">
-            <div v-for="(prepayment, index) in prepayments"
-                 :key="index"
-                 class="prepayment-item">
-              <div class="prepayment-header">
-                <h5>第{{ index + 1 }}次提前还款</h5>
-                <el-button v-if="prepayments.length > 1"
-                           size="small"
-                           type="danger"
-                           @click="removePrepayment(index)">删除
-                </el-button>
-              </div>
-              <el-form-item label="还款金额（元）">
-                <el-input
-                    v-model="prepayment.amount"
-                    placeholder="请输入还款金额"
-                    type="number"></el-input>
-              </el-form-item>
-              <el-form-item label="还款时间（还款后第几个月）">
-                <el-input v-model="prepayment.month"
-                          placeholder="如：12"
-                          type="number"></el-input>
-              </el-form-item>
-              <el-form-item label="还款方式">
-                <el-radio-group v-model="prepayment.type">
-                  <el-radio label="shorten">缩短还款期限</el-radio>
-                  <el-radio label="reduce">减少月供金额</el-radio>
-                </el-radio-group>
-              </el-form-item>
-            </div>
-            <el-button size="small"
-                       type="primary"
-                       @click="addPrepayment">添加提前还款
+      <el-button type="primary" @click="addPrepayment">添加提前还款</el-button>
+      <el-table
+        :data="prepayments"
+        border
+        stripe>
+        <el-table-column label="还款金额（元）" prop="amount">
+          <template v-slot="{row}">
+            <el-input
+              v-model="row.amount"
+              placeholder="请输入还款金额"
+              type="number"/>
+          </template>
+        </el-table-column>
+        <el-table-column label="还款时间（还款后第几个月）" prop="month">
+          <template v-slot="{row}">
+            <el-input
+              v-model="row.month"
+              placeholder="如：12"
+              type="number"/>
+          </template>
+        </el-table-column>
+        <el-table-column label="还款方式" prop="type">
+          <template v-slot="{row}">
+            <el-radio-group v-model="row.type" size="small">
+              <el-radio label="shorten">缩短还款期限</el-radio>
+              <el-radio label="reduce">减少月供金额</el-radio>
+            </el-radio-group>
+          </template>
+        </el-table-column>
+        <el-table-column label="操作" width="80">
+          <template v-slot="{$index}">
+            <el-button
+              v-if="prepayments.length > 1"
+              size="small"
+              type="text"
+              @click="removePrepayment($index)">删除
             </el-button>
-          </div>
-        </el-form>
-      </el-card>
+          </template>
+        </el-table-column>
+      </el-table>
 
       <!-- 计算按钮 -->
       <el-row class="action-section">
@@ -389,6 +399,12 @@ export default class HousingFund extends Vue {
       endDate: '',
       fixedRate: 0
     });
+  }
+
+  removeRateRow(index: number): void {
+    if (this.rateList.length > 1) {
+      this.rateList.splice(index, 1);
+    }
   }
 
   // 计算结束日期
