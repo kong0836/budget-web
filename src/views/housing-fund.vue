@@ -1,118 +1,83 @@
 <template>
   <div class="housing-fund">
     <div class="calculator-container">
-      <h2>公积金贷款利息计算器</h2>
+      <div class="calculator-header">公积金贷款利息计算器</div>
 
-      <!-- 基本信息输入 -->
-      <el-form
-        ref="basicForm"
-        :inline="true"
-        class="input-section">
-        <el-form-item
-          label="贷款总额"
-          prop="loanAmount">
-          <el-input
-            v-model="loanAmount"
-            placeholder="请输入贷款总额"
-            type="number">
-            <template slot="append">万元</template>
-          </el-input>
-        </el-form-item>
-
-        <el-form-item label="贷款年限" prop="loanYears">
-          <el-select v-model="loanYears">
-            <el-option
-              v-for="item in loadYearOptions"
-              :key="item.value"
-              :value="item.value"
-              :label="item.label"/>
-          </el-select>
-        </el-form-item>
-
-        <el-form-item
-          label="首次还款日期"
-          prop="startDate">
-          <el-date-picker
-            v-model="startDate"
-            type="month"
-            placeholder="选择还款年月"
-            format="yyyy年MM月"
-            value-format="yyyy-MM">
-          </el-date-picker>
-        </el-form-item>
-      </el-form>
-
-      <!-- 利率设置 - 使用单独的表单 -->
-      <el-card
-        class="rate-section-card">
-        <el-form ref="rateForm"
-                 :inline="true"
-                 class="rate-section">
-          <el-form-item
-            label="利率类型"
-            prop="rateType">
-            <el-radio-group v-model="rateType">
-              <el-radio label="fixed">固定利率</el-radio>
-              <el-radio label="floating">浮动利率</el-radio>
-            </el-radio-group>
+      <h3>基本信息</h3>
+      <el-card>
+        <el-form
+          :model="basicForm"
+          ref="basicForm"
+          :label-width="LABEL_WIDTH">
+          <el-form-item label="贷款总额" prop="loanAmount">
+            <el-input
+              v-model="loanAmount"
+              placeholder="请输入贷款总额"
+              type="number">
+              <template slot="append">万元</template>
+            </el-input>
           </el-form-item>
-
-          <el-form-item v-if="rateType === 'fixed'"
-                        label="年利率（%）"
-                        prop="fixedRate">
-            <el-input v-model="fixedRate"
-                      placeholder="如：3.1"
-                      type="number"></el-input>
+          <el-form-item label="贷款年限" prop="loanYears">
+            <el-select v-model="loanYears">
+              <el-option
+                v-for="item in loadYearOptions"
+                :key="item.value"
+                :value="item.value"
+                :label="item.label"/>
+            </el-select>
           </el-form-item>
-
-          <el-form-item
-            v-if="rateType === 'floating'"
-            label="浮动利率设置"
-            class="floating-rates-form">
-            <div v-for="(period, index) in floatingRates"
-                 :key="index"
-                 class="rate-period">
-              <el-form-item
-                  label="开始日期"
-                  :rules="[{required: true, message: '请选择开始日期', trigger: 'blur'}]">
-                <el-date-picker
-                  v-model="period.startDate"
-                  type="month"
-                  placeholder="选择开始年月"
-                  format="yyyy年MM月"
-                  value-format="yyyy-MM">
-                </el-date-picker>
-              </el-form-item>
-              <el-form-item
-                  label="年利率（%）"
-                  :rules="[{required: true, message: '请输入年利率', trigger: 'blur'}]">
-                <el-input v-model="period.rate"
-                          placeholder="如：3.1"
-                          type="number"></el-input>
-              </el-form-item>
-              <el-form-item>
-                <el-button v-if="floatingRates.length > 1"
-                           size="small"
-                           type="danger"
-                           @click="removeRatePeriod(index)">删除
-                </el-button>
-              </el-form-item>
-            </div>
-            <el-button size="small"
-                       type="primary"
-                       @click="addRatePeriod">添加利率期间
-            </el-button>
-            <p class="rate-tip">提示：可以设置多个利率期间，每个期间指定开始日期和对应的年利率</p>
+          <el-form-item label="首次还款日期" prop="startDate">
+            <el-date-picker
+              v-model="startDate"
+              type="month"
+              placeholder="选择还款年月"
+              format="yyyy年MM月"
+              value-format="yyyy-MM">
+            </el-date-picker>
           </el-form-item>
         </el-form>
       </el-card>
 
-      <!-- 多次提前还款设置 - 使用单独的表单 -->
+      <h3>利率设置</h3>
+      <el-button type="primary" @click="addRateRow">添加利率行</el-button>
+      <el-table
+        :data="rateList"
+        border
+        stripe>
+        <el-table-column label="开始日期" prop="startDate">
+          <template v-slot="{row}">
+            <el-date-picker
+              v-model="row.startDate"
+              type="month"
+              placeholder="选择还款年月"
+              format="yyyy年MM月"
+              value-format="yyyy-MM"/>
+          </template>
+        </el-table-column>
+        <el-table-column label="结束日期" prop="endDate">
+          <template v-slot="{row}">
+            <el-date-picker
+              v-model="row.endDate"
+              type="month"
+              placeholder="选择还款年月"
+              format="yyyy年MM月"
+              value-format="yyyy-MM"/>
+          </template>
+        </el-table-column>
+        <el-table-column label="年利率（%）" prop="fixedRate">
+          <template v-slot="{row}">
+            <el-input
+              v-model="row.fixedRate"
+              placeholder="请输入年利率"
+              type="number"/>
+          </template>
+        </el-table-column>
+      </el-table>
+
+      <h3>提前还款设置</h3>
       <el-card
         class="prepayment-section-card">
-        <el-form ref="prepaymentForm"
-                 :inline="true"
-                 class="prepayment-section">
+        <el-form ref="prepaymentForm" :label-width="LABEL_WIDTH">
           <div class="prepayment-list">
             <div v-for="(prepayment, index) in prepayments"
                  :key="index"
@@ -125,23 +90,18 @@
                            @click="removePrepayment(index)">删除
                 </el-button>
               </div>
-              <el-form-item
-                label="还款金额（元）"
-                :prop="`prepayments.${index}.amount`">
-                <el-input v-model="prepayment.amount"
-                          placeholder="请输入还款金额"
-                          type="number"></el-input>
+              <el-form-item label="还款金额（元）">
+                <el-input
+                    v-model="prepayment.amount"
+                    placeholder="请输入还款金额"
+                    type="number"></el-input>
               </el-form-item>
-              <el-form-item
-                label="还款时间（还款后第几个月）"
-                :prop="`prepayments.${index}.month`">
+              <el-form-item label="还款时间（还款后第几个月）">
                 <el-input v-model="prepayment.month"
                           placeholder="如：12"
                           type="number"></el-input>
               </el-form-item>
-              <el-form-item
-                label="还款方式"
-                :prop="`prepayments.${index}.type`">
+              <el-form-item label="还款方式">
                 <el-radio-group v-model="prepayment.type">
                   <el-radio label="shorten">缩短还款期限</el-radio>
                   <el-radio label="reduce">减少月供金额</el-radio>
@@ -174,9 +134,7 @@
       <div v-if="showResults" class="results-section">
         <h4>计算结果</h4>
 
-        <!-- 在模板的计算结果部分 -->
         <div class="basic-info">
-        <!-- 修改前：<p><strong>贷款总额：</strong>{{ formatCurrency(loanAmount) }}</p> -->
         <p><strong>贷款总额：</strong>{{ formatCurrency(loanAmount * TEN_THOUSAND) }}</p>
         <p><strong>贷款期限：</strong>{{ loanYears }}年（{{ totalMonths }}个月）</p>
         <p><strong>开始还款：</strong>{{ startDate ? startDate.replace('-', '年') + '月' : '' }}</p>
@@ -313,6 +271,22 @@ export default class HousingFund extends Vue {
   // 常量定义
   private TEN_THOUSAND = 10000;
 
+  LABEL_WIDTH = '100px';
+
+  basicForm = {
+    loanAmount: 50,
+    loanYears: 30,
+  };
+
+  rateForm = {
+    rateType: 'fixed',
+    fixedRate: 3.1,
+  };
+
+  rateList = [
+    { startDate: '2023-01', endDate: '2024-01', fixedRate: 3.1 },
+  ];
+
   // 基本参数
   loanAmount = 50;
 
@@ -340,7 +314,7 @@ export default class HousingFund extends Vue {
 
   // 多次提前还款设置
   prepayments: Array<{ amount: number, month: number, type: string }> = [
-    { amount: 0, month: 12, type: 'shorten' }
+    { amount: 10000, month: 12, type: 'shorten' }
   ];
 
   // 计算结果
@@ -407,6 +381,14 @@ export default class HousingFund extends Vue {
     const start = (this.currentPage - 1) * this.pageSize;
     const end = start + this.pageSize;
     return this.filteredSchedule.slice(start, end);
+  }
+
+  addRateRow(): void {
+    this.rateList.push({
+      startDate: '',
+      endDate: '',
+      fixedRate: 0
+    });
   }
 
   // 计算结束日期
@@ -493,9 +475,7 @@ export default class HousingFund extends Vue {
   // 计算浮动利率总利息（按日期）
   calculateFloatingInterest(): number {
     let totalInterest = 0;
-    // 修改前：let remainingPrincipal = this.loanAmount;
     let remainingPrincipal = this.loanAmount * this.TEN_THOUSAND;
-    // 修改前：const monthlyPrincipal = this.loanAmount / this.calculatedTotalMonths;
     const monthlyPrincipal = (this.loanAmount * this.TEN_THOUSAND) / this.calculatedTotalMonths;
 
     // 对利率期间按开始日期排序并转换为期数
@@ -637,7 +617,6 @@ export default class HousingFund extends Vue {
   calculateInterestForPeriod(principal: number, monthlyRate: number, months: number): number {
     let totalInterest = 0;
     let remainingPrincipal = principal;
-    // 修改前：const monthlyPrincipal = principal / (this.calculatedTotalMonths - (this.calculatedTotalMonths - months));
     const monthlyPrincipal = principal / months;
 
     for (let i = 1; i <= months; i++) {
@@ -686,8 +665,13 @@ export default class HousingFund extends Vue {
   }
 
   // 格式化货币
-  formatCurrency(amount: number): string {
-    return '¥' + amount.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
+  formatCurrency(amount = 0): string {
+    console.log('formatCurrency', amount);
+    // 确保amount是数字类型
+    const numAmount = Number(amount);
+    // 检查是否为有效数字，如果不是则使用0作为默认值
+    const validAmount = isNaN(numAmount) ? 0 : numAmount;
+    return '¥' + validAmount.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
   }
 
   // 将日期转换为期数
@@ -741,9 +725,7 @@ export default class HousingFund extends Vue {
     this.calculateEndDate();
 
     // 计算固定利率总利息
-    // ... 现有代码 ...
-  // 修改前：const fixedResult = this.calculateEqualPrincipal(this.loanAmount * 10000, this.fixedRate, this.totalMonths);
-  const fixedResult = this.calculateEqualPrincipal(this.loanAmount * this.TEN_THOUSAND, this.fixedRate, this.totalMonths);
+    const fixedResult = this.calculateEqualPrincipal(this.loanAmount * this.TEN_THOUSAND, this.fixedRate, this.totalMonths);
     this.fixedTotalInterest = fixedResult.totalInterest;
     this.repaymentSchedule = fixedResult.schedule;
 
@@ -790,7 +772,9 @@ export default class HousingFund extends Vue {
     border-radius: 8px;
     box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
 
-    h2 {
+    .calculator-header {
+      font-size: 24px;
+      font-weight: bold;
       text-align: center;
       color: #409eff;
       margin-bottom: 30px;
@@ -798,6 +782,10 @@ export default class HousingFund extends Vue {
 
     .input-section {
       margin-bottom: 30px;
+    }
+
+    .el-table {
+      margin-top: 10px;
     }
 
     .rate-section-card,
