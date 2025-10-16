@@ -313,6 +313,15 @@
                 label="剩余本金"
                 prop="remaining"
                 sortable></el-table-column>
+            <el-table-column
+                label="年利率(%)"
+                prop="annualRate"
+                sortable
+                align="right">
+              <template v-slot="{ row }">
+                <span>{{ row.annualRate.toFixed(2) }}</span>
+              </template>
+            </el-table-column>
             <el-table-column label="操作">
               <template v-slot="{ row }">
                 <el-button
@@ -697,6 +706,11 @@ export default class HousingFund extends Vue {
       totalInterest += monthlyInterest; // 累加总利息
       remainingPrincipal -= monthlyPrincipal; // 更新剩余本金
 
+      // 获取当期还款日期对应的月份字符串（YYYY-MM格式）
+      const repaymentDateStr = this.handleGetRepaymentDate(i).replace('年', '-').replace('月', '');
+      // 获取当期对应的实际年利率
+      const currentAnnualRate = this.handleGetCurrentAnnualRate(repaymentDateStr);
+
       // 添加当期还款计划记录
       schedule.push({
         month: i, // 期数
@@ -705,6 +719,7 @@ export default class HousingFund extends Vue {
         interest: this.handleFormatCurrency(monthlyInterest), // 利息（格式化后）
         total: this.handleFormatCurrency(monthlyPayment), // 月供总额（格式化后）
         remaining: this.handleFormatCurrency(Math.max(0, remainingPrincipal)), // 剩余本金（格式化后）
+        annualRate: currentAnnualRate, // 当期年利率
         rawPrincipal: monthlyPrincipal, // 本金（原始数值）
         rawInterest: monthlyInterest, // 利息（原始数值）
         rawTotal: monthlyPayment, // 月供总额（原始数值）
