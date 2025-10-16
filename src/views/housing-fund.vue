@@ -11,9 +11,8 @@
         <el-form-item label="贷款总额" prop="loanAmount">
           <el-input
               v-model="basicForm.loanAmount"
-            placeholder="请输入贷款总额"
+            placeholder="请输入贷款总额（元）"
             type="number">
-            <template slot="append">万元</template>
           </el-input>
         </el-form-item>
         <el-form-item label="贷款年限" prop="loanYears">
@@ -29,7 +28,7 @@
           <el-date-picker
               v-model="basicForm.startDate"
               type="date"
-              placeholder="选择还款年月"
+placeholder="选择还款年月"
               value-format="yyyy-MM-dd">
           </el-date-picker>
         </el-form-item>
@@ -183,7 +182,7 @@
         <h4>计算结果</h4>
 
         <div class="basic-info">
-          <p><strong>贷款总额：</strong>{{ handleFormatCurrency(basicForm.loanAmount * TEN_THOUSAND) }}</p>
+          <p><strong>贷款总额：</strong>{{ handleFormatCurrency(basicForm.loanAmount) }}</p>
           <p><strong>贷款期限：</strong>{{ basicForm.loanYears }}年（{{ totalMonths }}个月）</p>
           <p><strong>开始还款：</strong>{{ basicForm.startDate ? basicForm.startDate.replace('-', '年') + '月' : '' }}
           </p>
@@ -239,7 +238,7 @@
               <el-table-column
                 label="新结束日期"
                 align="center"
-                prop="newEndDate"></el-table-column>
+prop="newEndDate"></el-table-column>
             </el-table>
           </div>
         </div>
@@ -289,7 +288,7 @@
               sortable></el-table-column>
             <el-table-column
               label="利息"
-              prop="interest"
+prop="interest"
               sortable></el-table-column>
             <el-table-column
               label="月供"
@@ -346,7 +345,7 @@ export default class HousingFund extends Vue {
   private TEN_THOUSAND = 10000;
   LABEL_WIDTH = '100px';
   basicForm = {
-    loanAmount: 100,
+    loanAmount: 1000000, // 修改为100万元对应的元单位值
     loanYears: 30,
     startDate: `${moment('2024-01-01').format('YYYY-MM-DD')}`,
   };
@@ -539,8 +538,8 @@ export default class HousingFund extends Vue {
   // 计算浮动利率总利息（按日期）
   handleCalculateFloatingInterest(): number {
     let totalInterest = 0;
-    let remainingPrincipal = this.basicForm.loanAmount * this.TEN_THOUSAND;
-    const monthlyPrincipal = (this.basicForm.loanAmount * this.TEN_THOUSAND) / this.calculatedTotalMonths;
+    let remainingPrincipal = this.basicForm.loanAmount; // 移除乘以10000
+    const monthlyPrincipal = this.basicForm.loanAmount / this.calculatedTotalMonths; // 移除乘以10000
 
     // 对利率期间按开始日期排序并转换为期数
     const sortedRates = [...this.floatingRates]
@@ -592,7 +591,7 @@ export default class HousingFund extends Vue {
     this.prepaymentDetails = [];
     this.totalSaveInterest = 0;
 
-    let currentPrincipal = this.basicForm.loanAmount * this.TEN_THOUSAND;
+    let currentPrincipal = this.basicForm.loanAmount; // 移除乘以10000
     let currentMonths = this.calculatedTotalMonths;
     let currentMonth = 1;
     let totalSaveInterest = 0;
@@ -837,7 +836,6 @@ export default class HousingFund extends Vue {
       type: 'info'
     });
   }
-
   // 主计算函数
   handleCalculate(): void {
     // 确保所有提前还款都有计算好的期数
