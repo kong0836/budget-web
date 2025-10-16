@@ -454,7 +454,7 @@ export default class HousingFund extends Vue {
 
   // 添加利率期间（使用moment优化）
   handleAddRatePeriod(): void {
-    const lastPeriod = this.floatingRates[this.floatingRates.length - 1];
+const lastPeriod = this.floatingRates[this.floatingRates.length - 1];
     if (!lastPeriod.startDate) return;
 
     const nextDateStr = moment(lastPeriod.startDate, 'YYYY-MM')
@@ -752,8 +752,11 @@ export default class HousingFund extends Vue {
   handleGenerateRepaymentScheduleForPeriod(principal: number, monthlyRate: number, startMonth: number, endMonth: number): any[] {
     const schedule = [];
     let remainingPrincipal = principal;
-    const totalMonths = endMonth - startMonth + 1;
-    const monthlyPrincipal = principal / totalMonths;
+
+    // 修复：每月本金应该基于原始贷款总额和总期数计算
+    // 而不是基于当前生成的范围
+    const totalLoanMonths = this.calculatedTotalMonths;
+    const monthlyPrincipal = (this.basicForm.loanAmount * this.TEN_THOUSAND) / totalLoanMonths;
 
     for (let i = startMonth; i <= endMonth; i++) {
       const monthlyInterest = remainingPrincipal * monthlyRate;
