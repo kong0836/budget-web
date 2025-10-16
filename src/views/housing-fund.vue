@@ -452,26 +452,6 @@ export default class HousingFund extends Vue {
     this.endMonth = endMoment.month() + 1;
   }
 
-  // 添加利率期间（使用moment优化）
-  handleAddRatePeriod(): void {
-const lastPeriod = this.floatingRates[this.floatingRates.length - 1];
-    if (!lastPeriod.startDate) return;
-
-    const nextDateStr = moment(lastPeriod.startDate, 'YYYY-MM')
-      .add(12, 'months')
-      .format('YYYY-MM');
-
-    this.floatingRates.push({
-      startDate: nextDateStr,
-      rate: 3.1
-    });
-  }
-
-  // 删除利率期间
-  handleRemoveRatePeriod(index: number): void {
-    this.floatingRates.splice(index, 1);
-  }
-
   // 添加提前还款
   handleAddPrepayment(): void {
     this.prepayments.push({
