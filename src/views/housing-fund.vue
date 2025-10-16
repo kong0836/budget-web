@@ -322,6 +322,7 @@
 
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
+import moment from 'moment';
 
 interface FloatingRate {
   startDate: string,
@@ -420,16 +421,16 @@ export default class HousingFund extends Vue {
     return this.loanYears * 12;
   }
 
-  // 从日期字符串中获取年份
+  // 从日期字符串中获取年份（使用moment优化）
   get startYear(): number {
-    if (!this.startDate) return new Date().getFullYear();
-    return parseInt(this.startDate.split('-')[0]);
+    if (!this.startDate) return moment().year();
+    return moment(this.startDate, 'YYYY-MM').year();
   }
 
-  // 从日期字符串中获取月份
+  // 从日期字符串中获取月份（使用moment优化）
   get startMonth(): number {
-    if (!this.startDate) return new Date().getMonth() + 1;
-    return parseInt(this.startDate.split('-')[1]);
+    if (!this.startDate) return moment().month() + 1;
+    return moment(this.startDate, 'YYYY-MM').month() + 1;
   }
 
   // 分页相关方法
@@ -463,21 +464,26 @@ export default class HousingFund extends Vue {
     }
   }
 
-  // 计算结束日期
+  // 计算结束日期（使用moment优化）
   handleCalculateEndDate(): void {
-    let endYear = this.startYear + Math.floor((this.startMonth + this.calculatedTotalMonths - 1) / 12);
-    let endMonth = (this.startMonth + this.calculatedTotalMonths - 1) % 12 + 1;
-    this.endYear = endYear;
-    this.endMonth = endMonth;
+    if (!this.startDate) return;
+
+    const startMoment = moment(this.startDate, 'YYYY-MM');
+    const endMoment = startMoment.clone().add(this.calculatedTotalMonths - 1, 'months');
+
+    this.endYear = endMoment.year();
+    this.endMonth = endMoment.month() + 1;
   }
 
-  // 添加利率期间
+  // 添加利率期间（使用moment优化）
   handleAddRatePeriod(): void {
     const lastPeriod = this.floatingRates[this.floatingRates.length - 1];
-    const [year, month] = lastPeriod.startDate.split('-').map(Number);
-    const nextDate = new Date(year, month);
-    nextDate.setMonth(nextDate.getMonth() + 12); // 默认间隔12个月
-    const nextDateStr = `${nextDate.getFullYear()}-${(nextDate.getMonth() + 1).toString().padStart(2, '0')}`;
+    if (!lastPeriod.startDate) return;
+
+    const nextDateStr = moment(lastPeriod.startDate, 'YYYY-MM')
+      .add(12, 'months')
+      .format('YYYY-MM');
+
     this.floatingRates.push({
       startDate: nextDateStr,
       rate: 3.1
@@ -506,15 +512,15 @@ export default class HousingFund extends Vue {
     }
   }
 
-  // 计算提前还款对应的期数
+  // 计算提前还款对应的期数（使用moment优化）
   handleCalculatePrepaymentMonth(repaymentDateStr: string): number {
     if (!repaymentDateStr || !this.startDate) return 0;
 
-    const [startYear, startMonth] = this.startDate.split('-').map(Number);
-    const [repayYear, repayMonth] = repaymentDateStr.split('-').map(Number);
+    const startMoment = moment(this.startDate, 'YYYY-MM');
+    const repayMoment = moment(repaymentDateStr, 'YYYY-MM');
 
     // 计算从开始日期到提前还款日期的月数差
-    const monthDiff = (repayYear - startYear) * 12 + (repayMonth - startMonth) + 1;
+    const monthDiff = repayMoment.diff(startMoment, 'months') + 1;
 
     return Math.max(1, monthDiff);
   }
@@ -555,12 +561,14 @@ export default class HousingFund extends Vue {
     return { totalInterest, schedule };
   }
 
-  // 获取还款日期
+  // 获取还款日期（使用moment优化）
   handleGetRepaymentDate(monthIndex: number): string {
-    const totalMonths = this.startMonth + monthIndex - 1;
-    const year = this.startYear + Math.floor((totalMonths - 1) / 12);
-    const month = (totalMonths - 1) % 12 + 1;
-    return `${year}年${month}月`;
+    if (!this.startDate) return '';
+
+    const startMoment = moment(this.startDate, 'YYYY-MM');
+    const repaymentMoment = startMoment.clone().add(monthIndex - 1, 'months');
+
+    return `${repaymentMoment.year()}年${repaymentMoment.month() + 1}月`;
   }
 
   // 计算浮动利率总利息（按日期）
@@ -746,11 +754,13 @@ export default class HousingFund extends Vue {
     return totalInterest;
   }
 
-  // 获取结束日期
+  // 获取结束日期（使用moment优化）
   handleGetEndDate(startYear: number, startMonth: number, totalMonths: number): string {
-    const endYear = startYear + Math.floor((startMonth + totalMonths - 1) / 12);
-    const endMonth = (startMonth + totalMonths - 1) % 12 + 1;
-    return `${endYear}年${endMonth}月`;
+    const startDateStr = `${startYear}-${startMonth.toString().padStart(2, '0')}`;
+    const startMoment = moment(startDateStr, 'YYYY-MM');
+    const endMoment = startMoment.clone().add(totalMonths - 1, 'months');
+
+    return `${endMoment.year()}年${endMoment.month() + 1}月`;
   }
 
   // 格式化货币
@@ -763,16 +773,15 @@ export default class HousingFund extends Vue {
     return '¥' + validAmount.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
   }
 
-  // 将日期转换为期数
+  // 将日期转换为期数（使用moment优化）
   handleConvertDateToMonthIndex(dateStr: string): number {
-    if (!dateStr) return 1;
+    if (!dateStr || !this.startDate) return 1;
 
-    const [year, month] = dateStr.split('-').map(Number);
-    const startYear = this.startYear;
-    const startMonth = this.startMonth;
+    const startMoment = moment(this.startDate, 'YYYY-MM');
+    const dateMoment = moment(dateStr, 'YYYY-MM');
 
     // 计算从开始日期到指定日期的月数差
-    const monthDiff = (year - startYear) * 12 + (month - startMonth) + 1;
+    const monthDiff = dateMoment.diff(startMoment, 'months') + 1;
 
     // 确保至少为第1期
     return Math.max(1, monthDiff);
@@ -843,7 +852,7 @@ export default class HousingFund extends Vue {
     this.loanAmount = 50;
     this.loanYears = 30;
     this.fixedRate = 3.1;
-    this.startDate = `${new Date().getFullYear()}-${(new Date().getMonth() + 1).toString().padStart(2, '0')}`;
+    this.startDate = moment().format('YYYY-MM');
     this.floatingRates = [{ startDate: this.startDate, rate: 3.1 }];
     this.prepayments = [{ amount: 0, repaymentDate: '', month: 0, type: 'shorten' }];
     this.showResults = false;
