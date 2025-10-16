@@ -613,7 +613,7 @@ export default class HousingFund extends Vue {
     this.prepaymentDetails = [];
     this.totalSaveInterest = 0;
 
-    let currentPrincipal = this.basicForm.loanAmount; // 移除乘以10000
+    let currentPrincipal = this.basicForm.loanAmount;
     let currentMonths = this.calculatedTotalMonths;
     let currentMonth = 1;
     let totalSaveInterest = 0;
@@ -752,8 +752,6 @@ export default class HousingFund extends Vue {
     const schedule = [];
     let remainingPrincipal = principal;
 
-    // 修复：每月本金应该基于原始贷款总额和总期数计算
-    // 而不是基于当前生成的范围
     const totalLoanMonths = this.calculatedTotalMonths;
     const monthlyPrincipal = (this.basicForm.loanAmount * this.TEN_THOUSAND) / totalLoanMonths;
 
