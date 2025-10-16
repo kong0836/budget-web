@@ -367,16 +367,22 @@ const DEFAULT_BASIC_INFO: Partial<BasicInfo> = {
   repaymentDate: '', // 默认还款日期
   startDate: '', // 默认开始还款日期
 };
-// 在类的顶部定义常量
+/**
+ * 公积金贷款利息计算器组件
+ */
 @Component
 export default class HousingFund extends Vue {
+  // 表单标签宽度
   LABEL_WIDTH = '100px';
+  // 基本信息表单数据
   basicForm: Partial<BasicInfo> = cloneDeep(DEFAULT_BASIC_INFO);
+  // 利率列表
   rateList = [
     { startDate: '2024-01', endDate: '2025-01', fixedRate: 3.1 },
     { startDate: '2025-01', endDate: '2025-01', fixedRate: 2.85 },
     { startDate: '2026-01', endDate: '', fixedRate: 2.6 },
   ];
+  // 贷款年限选项
   loadYearOptions = [
     { value: 5, label: '5年' },
     { value: 10, label: '10年' },
@@ -384,6 +390,7 @@ export default class HousingFund extends Vue {
     { value: 20, label: '20年' },
     { value: 30, label: '30年' },
   ];
+  // 固定利率
   fixedRate = 3.1;
   // 浮动利率设置（按期数）
   floatingRates: FloatingRate[] = [
@@ -393,27 +400,27 @@ export default class HousingFund extends Vue {
   prepayments: Prepayment[] = [
     { amount: 100000, repaymentDate: '2025-01-01', month: 0, type: 'shorten' }
   ];
-  // 计算结果
-  showResults = false;
-  totalMonths = 0;
-  endYear = 0;
-  endMonth = 0;
-  fixedTotalInterest = 0;
-  floatingTotalInterest = 0;
-  prepaymentTotalAmount = 0;
-  totalSaveInterest = 0;
-  finalEndYear = 0;
-  finalEndMonth = 0;
-  finalTotalMonths = 0; // 添加最终的还款期数
-  prepaymentDetails: Array<any> = [];
-  repaymentSchedule: Array<any> = [];
-  actualRepaymentSchedule: Array<any> = []; // 添加实际还款计划
+  // 计算结果相关
+  showResults = false; // 是否显示计算结果
+  totalMonths = 0; // 总期数
+  endYear = 0; // 结束年份
+  endMonth = 0; // 结束月份
+  fixedTotalInterest = 0; // 固定利率总利息
+  floatingTotalInterest = 0; // 浮动利率总利息
+  prepaymentTotalAmount = 0; // 提前还款总金额
+  totalSaveInterest = 0; // 节省利息总额
+  finalEndYear = 0; // 最终结束年份
+  finalEndMonth = 0; // 最终结束月份
+  finalTotalMonths = 0; // 最终的还款期数
+  prepaymentDetails: Array<any> = []; // 提前还款详情
+  repaymentSchedule: Array<any> = []; // 还款计划
+  actualRepaymentSchedule: Array<any> = []; // 实际还款计划（包含提前还款）
   // 分页相关
-  currentPage = 1;
-  pageSize = 12;
-  searchTerm = '';
+  currentPage = 1; // 当前页码
+  pageSize = 12; // 每页显示条数
+  searchTerm = ''; // 搜索关键词
   // 常量定义
-  private TEN_THOUSAND = 10000;
+  private TEN_THOUSAND = 10000; // 万的单位转换常量
 
   // 计算总月数
   get calculatedTotalMonths(): number {
