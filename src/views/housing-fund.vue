@@ -45,7 +45,10 @@
         :data="rateList"
         border
         stripe>
-        <el-table-column label="开始日期" prop="startDate">
+        <el-table-column
+            label="开始日期"
+            align="center"
+            prop="startDate">
           <template v-slot="{row}">
             <el-date-picker
               v-model="row.startDate"
@@ -55,7 +58,10 @@
               value-format="yyyy-MM"/>
           </template>
         </el-table-column>
-        <el-table-column label="结束日期" prop="endDate">
+        <el-table-column
+            label="结束日期"
+            align="center"
+            prop="endDate">
           <template v-slot="{row}">
             <el-date-picker
               v-model="row.endDate"
@@ -65,7 +71,10 @@
               value-format="yyyy-MM"/>
           </template>
         </el-table-column>
-        <el-table-column label="年利率（%）" prop="fixedRate">
+        <el-table-column
+            label="年利率（%）"
+            align="center"
+            prop="fixedRate">
           <template v-slot="{row}">
             <el-input
               v-model="row.fixedRate"
@@ -73,7 +82,10 @@
               type="number"/>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="80">
+        <el-table-column
+            label="操作"
+            align="center"
+            width="80">
           <template v-slot="{$index}">
             <el-button
               v-if="rateList.length > 1"
@@ -94,7 +106,10 @@
         :data="prepayments"
         border
         stripe>
-        <el-table-column label="还款金额（元）" prop="amount">
+        <el-table-column
+            label="还款金额（元）"
+            align="center"
+            prop="amount">
           <template v-slot="{row}">
             <el-input
               v-model="row.amount"
@@ -102,7 +117,10 @@
               type="number"/>
           </template>
         </el-table-column>
-        <el-table-column label="还款时间" prop="repaymentDate">
+        <el-table-column
+            label="还款时间"
+            align="center"
+            prop="repaymentDate">
           <template v-slot="{row}">
             <el-date-picker
               v-model="row.repaymentDate"
@@ -115,13 +133,17 @@
         </el-table-column>
         <el-table-column
           label="对应期数"
+          align="center"
           prop="month"
           width="100">
           <template v-slot="{row}">
             <span>{{ row.month || '-' }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="还款方式" prop="type">
+        <el-table-column
+            label="还款方式"
+            align="center"
+            prop="type">
           <template v-slot="{row}">
             <el-radio-group v-model="row.type" size="small">
               <el-radio label="shorten">缩短还款期限</el-radio>
@@ -129,7 +151,10 @@
             </el-radio-group>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="80">
+        <el-table-column
+            label="操作"
+            align="center"
+            width="80">
           <template v-slot="{$index}">
             <el-button
               v-if="prepayments.length > 1"
@@ -183,25 +208,33 @@
 
           <div class="prepayment-details">
             <h6>每次提前还款详情</h6>
-            <el-table :data="prepaymentDetails"
-                      border>
+            <el-table
+                :data="prepaymentDetails"
+                border
+                stripe>
               <el-table-column
                 label="序号"
+                align="center"
                 prop="index"></el-table-column>
               <el-table-column
                 label="还款金额"
+                align="center"
                 prop="amount"></el-table-column>
               <el-table-column
                 label="还款时间"
+                align="center"
                 prop="month"></el-table-column>
               <el-table-column
                 label="还款方式"
+                align="center"
                 prop="type"></el-table-column>
               <el-table-column
                 label="节省利息"
+                align="center"
                 prop="saveInterest"></el-table-column>
               <el-table-column
                 label="新结束日期"
+                align="center"
                 prop="newEndDate"></el-table-column>
             </el-table>
           </div>
@@ -290,6 +323,17 @@
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
 
+interface FloatingRate {
+  startDate: string,
+  rate: number
+}
+
+interface Prepayment {
+  amount: number;
+  repaymentDate: string;
+  month: number;
+  type: string;
+}
 // 在类的顶部定义常量
 @Component
 export default class HousingFund extends Vue {
@@ -327,19 +371,16 @@ export default class HousingFund extends Vue {
 
   startDate = `${new Date().getFullYear()}-${(new Date().getMonth() + 1).toString().padStart(2, '0')}`;
 
-  // 利率类型
-  rateType = 'fixed';
-
   fixedRate = 3.1;
 
   // 浮动利率设置（按期数）
-  floatingRates: Array<{ startDate: string, rate: number }> = [
+  floatingRates: FloatingRate[] = [
     { startDate: `${new Date().getFullYear()}-${(new Date().getMonth() + 1).toString().padStart(2, '0')}`, rate: 3.1 }
   ];
 
   // 多次提前还款设置
-  prepayments: Array<{ amount: number, repaymentDate: string, month: number, type: string }> = [
-    { amount: 10000, repaymentDate: '', month: 12, type: 'shorten' }
+  prepayments: Prepayment[] = [
+    { amount: 10000, repaymentDate: '2025-10', month: 0, type: 'shorten' }
   ];
 
   // 计算结果
@@ -450,10 +491,6 @@ export default class HousingFund extends Vue {
 
   // 添加提前还款
   handleAddPrepayment(): void {
-    const lastPrepayment = this.prepayments[this.prepayments.length - 1];
-    const currentDate = new Date();
-    const nextDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + 12, 1);
-
     this.prepayments.push({
       amount: 0,
       repaymentDate: '',
