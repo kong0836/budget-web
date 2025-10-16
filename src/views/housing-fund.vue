@@ -28,10 +28,9 @@
         <el-form-item label="首次还款日期" prop="startDate">
           <el-date-picker
               v-model="basicForm.startDate"
-            type="month"
-            placeholder="选择还款年月"
-            format="yyyy年MM月"
-            value-format="yyyy-MM">
+              type="date"
+              placeholder="选择还款年月"
+              value-format="yyyy-MM-dd">
           </el-date-picker>
         </el-form-item>
       </el-form>
@@ -52,7 +51,7 @@
           <template v-slot="{row}">
             <el-date-picker
               v-model="row.startDate"
-              type="month"
+              type="date"
               placeholder="选择还款年月"
               format="yyyy年MM月"
               value-format="yyyy-MM"/>
@@ -350,7 +349,7 @@ export default class HousingFund extends Vue {
   basicForm = {
     loanAmount: 100,
     loanYears: 30,
-    startDate: `${moment('2024-01').format('YYYY-MM')}`,
+    startDate: `${moment('2024-01-01').format('YYYY-MM-DD')}`,
   };
   rateList = [
     { startDate: '2024-01', endDate: '2025-01', fixedRate: 3.1 },
