@@ -314,10 +314,10 @@
                 prop="remaining"
                 sortable></el-table-column>
             <el-table-column
+                align="right"
                 label="年利率(%)"
                 prop="annualRate"
-                sortable
-                align="right">
+                sortable>
               <template v-slot="{ row }">
                 <span>{{ row.annualRate.toFixed(2) }}</span>
               </template>
@@ -473,8 +473,6 @@ export default class HousingFund extends Vue {
   currentPage = 1; // 当前页码
   pageSize = 12; // 每页显示条数
   searchTerm = ''; // 搜索关键词
-  // 常量定义
-  private TEN_THOUSAND = 10000; // 万的倍数
 
   /**
    * 计算贷款总月数
