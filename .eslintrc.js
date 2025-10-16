@@ -53,9 +53,9 @@ module.exports = {
       skipBlankLines: false,  // 是否跳过空行
       ignoreComments: false   // 是否忽略注释行
     }],
-    'lines-between-class-members': ['error', 'always', {
-      exceptAfterSingleLine: false
-    }],
+    // 'lines-between-class-members': ['error', 'always', {
+    //   exceptAfterSingleLine: false
+    // }],
       'padded-blocks': ['error', 'never'], // 禁止代码块内的多余空行
   }
 };
