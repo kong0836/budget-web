@@ -358,11 +358,14 @@ interface Prepayment {
   type: string;
 }
 
+/**
+ * 默认基本信息配置
+ */
 const DEFAULT_BASIC_INFO: Partial<BasicInfo> = {
-  loanAmount: 1000000, // 修改为100万元对应的元单位值
-  loanYears: 30,
-  repaymentDate: '',
-  startDate: '',
+  loanAmount: 1000000, // 默认贷款金额（元）
+  loanYears: 30, // 默认贷款年限
+  repaymentDate: '', // 默认还款日期
+  startDate: '', // 默认开始还款日期
 };
 // 在类的顶部定义常量
 @Component
