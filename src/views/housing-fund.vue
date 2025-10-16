@@ -123,10 +123,9 @@
           <template v-slot="{row}">
             <el-date-picker
               v-model="row.repaymentDate"
-              type="month"
-              placeholder="选择还款年月"
-              format="yyyy年MM月"
-              value-format="yyyy-MM"
+              type="date"
+              placeholder="选择还款时间"
+              value-format="yyyy-MM-dd"
               @change="handleUpdatePrepaymentMonth(row)"/>
           </template>
         </el-table-column>
@@ -370,7 +369,7 @@ export default class HousingFund extends Vue {
   ];
   // 多次提前还款设置
   prepayments: Prepayment[] = [
-    { amount: 100000, repaymentDate: '2025-01', month: 0, type: 'shorten' }
+    { amount: 100000, repaymentDate: '2025-01-01', month: 0, type: 'shorten' }
   ];
   // 计算结果
   showResults = false;
