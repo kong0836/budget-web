@@ -112,7 +112,7 @@
           @click="handleAddPrepayment">添加提前还款
       </el-button>
       <el-table
-          :data="prepayments"
+          :data="prepaymentList"
           border
           stripe>
         <el-table-column
@@ -165,7 +165,7 @@
             width="80">
           <template v-slot="{$index}">
             <el-button
-                v-if="prepayments.length > 1"
+                v-if="prepaymentList.length > 1"
                 size="small"
                 type="text"
                 @click="handleRemovePrepayment($index)">删除
@@ -177,13 +177,17 @@
       <!-- 计算按钮 -->
       <el-row class="action-section">
         <el-col :span="24" class="text-center">
-          <el-button size="small"
-                     type="primary"
-                     @click="handleCalculate">计算
+          <el-button
+              size="small"
+              type="primary"
+              @click="handleCalculate">
+            计算
           </el-button>
-          <el-button size="small"
-                     type="default"
-                     @click="handleReset">重置
+          <el-button
+              size="small"
+              type="default"
+              @click="handleReset">
+            重置
           </el-button>
         </el-col>
       </el-row>
@@ -195,7 +199,7 @@
         <div class="basic-info">
           <p><strong>贷款总额：</strong>{{ handleFormatCurrency(basicForm.loanAmount) }}</p>
           <p><strong>贷款期限：</strong>{{ basicForm.loanYears }}年（{{ totalMonths }}个月）</p>
-          <p><strong>开始还款：</strong>{{ basicForm.startDate ? basicForm.startDate.replace('-', '年') + '月' : '' }}
+          <p><strong>开始还款：</strong>{{ basicForm.startDate }}
           </p>
           <p><strong>结束还款：</strong>{{ endYear }}年{{ endMonth }}月</p>
         </div>
@@ -206,10 +210,10 @@
           <p><strong>浮动利率总利息：</strong>{{ handleFormatCurrency(floatingTotalInterest) }}</p>
         </div>
 
-        <div v-if="prepayments.some(p => p.amount > 0)" class="prepayment-results">
+        <div v-if="prepaymentList.some(p => p.amount > 0)" class="prepayment-results">
           <h5>提前还款分析</h5>
           <div class="prepayment-summary">
-            <p><strong>提前还款总次数：</strong>{{ prepayments.filter(p => p.amount > 0).length }}次</p>
+            <p><strong>提前还款总次数：</strong>{{ prepaymentList.filter(p => p.amount > 0).length }}次</p>
             <p><strong>提前还款总金额：</strong>{{ handleFormatCurrency(prepaymentTotalAmount) }}</p>
             <p><strong>节省利息总额：</strong>{{ handleFormatCurrency(totalSaveInterest) }}</p>
             <p><strong>原还款期数：</strong>{{ totalMonths }}个月</p>
@@ -368,6 +372,15 @@ interface Prepayment {
 }
 
 /**
+ * 利率列表项接口定义
+ */
+interface RateListItem {
+  startDate: string;
+  endDate: string;
+  fixedRate: number;
+}
+
+/**
  * 默认基本贷款信息配置
  */
 const DEFAULT_BASIC_INFO: Partial<BasicInfo> = {
@@ -376,6 +389,36 @@ const DEFAULT_BASIC_INFO: Partial<BasicInfo> = {
   repaymentDate: '', // 还款日期为空
   startDate: '', // 开始日期为空
 };
+
+/**
+ * 默认利率列表配置
+ */
+const DEFAULT_RATE_LIST: RateListItem[] = [
+  { startDate: '2024-01', endDate: '2025-01', fixedRate: 3.1 },
+  { startDate: '2025-01', endDate: '2025-01', fixedRate: 2.85 },
+  { startDate: '2026-01', endDate: '', fixedRate: 2.6 },
+];
+
+/**
+ * 默认浮动利率配置
+ */
+const DEFAULT_FLOATING_RATES: FloatingRate[] = [
+  { startDate: `${new Date().getFullYear()}-${(new Date().getMonth() + 1).toString().padStart(2, '0')}`, rate: 3.1 }
+];
+
+/**
+ * 默认提前还款列表配置
+ */
+const DEFAULT_PREPAYMENT_LIST: Prepayment[] = [
+  { amount: 100000, repaymentDate: '2025-01-01', month: 0, type: 'shorten' }
+];
+
+/**
+ * 默认重置提前还款列表配置
+ */
+const DEFAULT_RESET_PREPAYMENT_LIST: Prepayment[] = [
+  { amount: 0, repaymentDate: '', month: 0, type: 'shorten' }
+];
 
 /**
  * 公积金贷款利息计算器组件
@@ -387,11 +430,7 @@ export default class HousingFund extends Vue {
   // 基本贷款信息表单数据
   basicForm: Partial<BasicInfo> = cloneDeep(DEFAULT_BASIC_INFO);
   // 利率列表数据
-  rateList = [
-    { startDate: '2024-01', endDate: '2025-01', fixedRate: 3.1 },
-    { startDate: '2025-01', endDate: '2025-01', fixedRate: 2.85 },
-    { startDate: '2026-01', endDate: '', fixedRate: 2.6 },
-  ];
+  rateList: RateListItem[] = cloneDeep(DEFAULT_RATE_LIST);
   // 贷款年限选项
   loadYearOptions = [
     { value: 5, label: '5年' },
@@ -403,13 +442,10 @@ export default class HousingFund extends Vue {
   // 固定利率值
   fixedRate = 3.1;
   // 浮动利率设置（按期数）
-  floatingRates: FloatingRate[] = [
-    { startDate: `${new Date().getFullYear()}-${(new Date().getMonth() + 1).toString().padStart(2, '0')}`, rate: 3.1 }
-  ];
+  floatingRates: FloatingRate[] = cloneDeep(DEFAULT_FLOATING_RATES);
   // 多次提前还款设置
-  prepayments: Prepayment[] = [
-    { amount: 100000, repaymentDate: '2025-01-01', month: 0, type: 'shorten' }
-  ];
+  prepaymentList: Prepayment[] = cloneDeep(DEFAULT_PREPAYMENT_LIST);
+
   // 计算结果相关字段
   showResults = false; // 是否显示计算结果
   totalMonths = 0; // 贷款总月数
@@ -417,7 +453,6 @@ export default class HousingFund extends Vue {
   endMonth = 0; // 贷款结束月份
   fixedTotalInterest = 0; // 固定利率总利息
   floatingTotalInterest = 0; // 浮动利率总利息
-  prepaymentTotalAmount = 0; // 提前还款总金额
   totalSaveInterest = 0; // 节省利息总额
   finalEndYear = 0; // 最终还款结束年份
   finalEndMonth = 0; // 最终还款结束月份
@@ -438,6 +473,14 @@ export default class HousingFund extends Vue {
    */
   get calculatedTotalMonths(): number {
     return this.basicForm.loanYears * 12;
+  }
+
+  /**
+   * 计算每月还款本金（元）-等额本金还款
+   * @returns 每月还款本金
+   */
+  get monthlyPrincipal(): number {
+    return this.basicForm.loanAmount / this.calculatedTotalMonths;
   }
 
   /**
@@ -483,6 +526,16 @@ export default class HousingFund extends Vue {
   }
 
   /**
+   * 计算提前还款总金额
+   * @returns 提前还款总金额
+   */
+  get prepaymentTotalAmount(): number {
+    const validPrepayments = this.prepaymentList
+        .filter(p => p.amount > 0 && p.month > 0);
+    return validPrepayments.reduce((sum, p) => sum + p.amount, 0);
+  }
+
+  /**
    * 添加利率行
    */
   handleAddRateRow(): void {
@@ -520,7 +573,7 @@ export default class HousingFund extends Vue {
    * 添加提前还款记录
    */
   handleAddPrepayment(): void {
-    this.prepayments.push({
+    this.prepaymentList.push({
       amount: 0,
       repaymentDate: '',
       month: 0,
@@ -534,20 +587,20 @@ export default class HousingFund extends Vue {
    */
   handleUpdatePrepaymentMonth(row: any): void {
     if (row.repaymentDate && this.basicForm.startDate) {
-      row.month = this.handleCalculatePrepaymentMonth(row.repaymentDate);
+      row.month = this.handleCalculatePeriod(row.repaymentDate);
     }
   }
 
   /**
    * 计算提前还款对应的期数（使用moment优化）
-   * @param repaymentDateStr 提前还款日期字符串
+   * @param date 提前还款日期字符串
    * @returns 对应的还款期数
    */
-  handleCalculatePrepaymentMonth(repaymentDateStr: string): number {
-    if (!repaymentDateStr || !this.basicForm.startDate) return 0;
+  handleCalculatePeriod(date: string): number {
+    if (!date || !this.basicForm.startDate) return 0;
 
     const startMoment = moment(this.basicForm.startDate, 'YYYY-MM');
-    const repayMoment = moment(repaymentDateStr, 'YYYY-MM');
+    const repayMoment = moment(date, 'YYYY-MM');
 
     // 计算从开始日期到提前还款日期的月数差
     const monthDiff = repayMoment.diff(startMoment, 'months') + 1;
@@ -556,24 +609,72 @@ export default class HousingFund extends Vue {
   }
 
   /**
-   * 计算指定期间内的利息（等额本金方式）
-   * @param principal 本金金额
-   * @param monthlyRate 月利率
-   * @param months 还款期数
-   * @returns 期间内的总利息
+   * 根据利率设置信息和指定时间获取实际年利率值
+   * @param date 指定时间，默认为当前时间
+   * @returns 实际年利率值
    */
-  handleCalculateInterestForPeriod(principal: number, monthlyRate: number, months: number): number {
-    let totalInterest = 0;
-    let remainingPrincipal = principal;
-    const monthlyPrincipal = principal / months;
-
-    for (let i = 1; i <= months; i++) {
-      const monthlyInterest = remainingPrincipal * monthlyRate;
-      totalInterest += monthlyInterest;
-      remainingPrincipal -= monthlyPrincipal;
+  handleGetCurrentAnnualRate(date: string = moment().format('YYYY-MM')): number {
+    if (!this.rateList || this.rateList.length === 0) {
+      return this.fixedRate; // 如果没有利率设置，返回默认固定利率
     }
 
-    return totalInterest;
+    const targetDate = moment(date, 'YYYY-MM');
+
+    // 遍历利率列表，找到当前时间对应的利率
+    for (const rateItem of this.rateList) {
+      if (!rateItem.startDate || !rateItem.fixedRate) continue;
+
+      const startDate = moment(rateItem.startDate, 'YYYY-MM');
+      let endDate = null;
+
+      if (rateItem.endDate) {
+        endDate = moment(rateItem.endDate, 'YYYY-MM');
+      }
+
+      // 检查是否在当前利率区间内
+      if (targetDate.isSameOrAfter(startDate)) {
+        // 如果有结束日期且当前日期在结束日期之后，跳过
+        if (endDate && targetDate.isAfter(endDate)) {
+          continue;
+        }
+
+        return rateItem.fixedRate;
+      }
+    }
+
+    // 如果当前时间不在任何利率区间内，返回第一个利率或默认利率
+    return this.rateList[0]?.fixedRate || this.fixedRate;
+  }
+
+  /**
+   * 计算指定期间内的利息（等额本金方式）
+   * @param principal 剩余本金金额
+   * @param fixedRate 年利率
+   * @param date 提前还款日期
+   * @returns 期间内的总利息
+   */
+  handleCalculateInterest(principal: number, fixedRate: number, date: string): number {
+    try {
+      console.log('handleCalculateInterest', principal, fixedRate, date);
+      let totalInterest = 0;
+      // 日利率
+      const dailyRate = fixedRate / 100 / 360;
+      // 计算提前还款日期之前的利息
+      const endDate = moment(date, 'YYYY-MM');
+      // 获取endDate上一个月的BasicInfo.repaymentDate日作为startDate
+      const startDateMonth = endDate.clone().subtract(1, 'months');
+      // 获取每月还款日期，如果没有设置则默认为1日
+      const repaymentDay = this.basicForm.repaymentDate || '01';
+      // 构建正确的startDate
+      const startDate = moment(`${startDateMonth.format('YYYY-MM')}-${repaymentDay}`, 'YYYY-MM-DD');
+
+      const days = endDate.diff(startDate, 'days');
+      totalInterest = principal * dailyRate * days;
+
+      return totalInterest;
+    } catch (error) {
+      console.error(error);
+    }
   }
 
   /**
@@ -683,11 +784,10 @@ export default class HousingFund extends Vue {
    */
   handleCalculatePrepayments(): void {
     // 过滤有效且按时间排序的提前还款记录
-    const validPrepayments = this.prepayments
+    const validPrepaymentList = this.prepaymentList
         .filter(p => p.amount > 0 && p.month > 0)
         .sort((a, b) => a.month - b.month);
 
-    this.prepaymentTotalAmount = validPrepayments.reduce((sum, p) => sum + p.amount, 0);
     this.prepaymentDetails = [];
     this.totalSaveInterest = 0;
 
@@ -701,20 +801,22 @@ export default class HousingFund extends Vue {
     let actualRepaymentSchedule: any[] = []; // 实际还款计划数组
 
     // 遍历每个有效的提前还款记录
-    for (const prepayment of validPrepayments) {
+    for (const prepayment of validPrepaymentList) {
       if (prepayment.month <= currentMonth) continue; // 跳过已经处理过的期间
 
-      // 计算到提前还款时的已还本金
+      // 已还本金
       const monthlyPrincipal = currentPrincipal / currentMonths;
       const monthsBeforePrepayment = prepayment.month - currentMonth;
-      const principalPaid = monthlyPrincipal * monthsBeforePrepayment;
+      const paidPrincipal = monthlyPrincipal * monthsBeforePrepayment;
 
-      // 计算提前还款前的利息
-      const monthlyRate = this.fixedRate / 100 / 12;
-      const interestBeforePrepayment = this.handleCalculateInterestForPeriod(
-          currentPrincipal, monthlyRate, monthsBeforePrepayment
+      // 使用当前时间对应的实际年利率
+      const annualRate = this.handleGetCurrentAnnualRate(prepayment.repaymentDate);
+      // 截止提前还款日时已产生的利息
+      const interestBeforePrepayment = this.handleCalculateInterest(
+          currentPrincipal - paidPrincipal, annualRate, prepayment.repaymentDate
       );
 
+      const monthlyRate = annualRate / 100 / 12;
       // 生成提前还款前的还款计划
       const prepaymentSchedule = this.handleGenerateRepaymentScheduleForPeriod(
           currentPrincipal, monthlyRate, currentMonth, prepayment.month - 1
@@ -722,7 +824,7 @@ export default class HousingFund extends Vue {
       actualRepaymentSchedule = actualRepaymentSchedule.concat(prepaymentSchedule);
 
       // 提前还款后的剩余本金
-      const remainingAfterPrepayment = currentPrincipal - principalPaid - prepayment.amount;
+      const remainingAfterPrepayment = currentPrincipal - paidPrincipal - prepayment.amount;
 
       if (remainingAfterPrepayment <= 0) {
         // 如果提前还款后剩余本金为0或负数，贷款已还清
@@ -817,8 +919,10 @@ export default class HousingFund extends Vue {
 
     // 生成剩余期的还款计划
     if (currentPrincipal > 0) {
+      // 使用当前时间对应的实际年利率
+      const annualRate = this.handleGetCurrentAnnualRate();
       const remainingSchedule = this.handleGenerateRepaymentScheduleForPeriod(
-          currentPrincipal, this.fixedRate / 100 / 12, currentMonth, finalTotalMonths
+          currentPrincipal, annualRate / 100 / 12, currentMonth, finalTotalMonths
       );
       actualRepaymentSchedule = actualRepaymentSchedule.concat(remainingSchedule);
     }
@@ -845,7 +949,7 @@ export default class HousingFund extends Vue {
     let remainingPrincipal = principal;
 
     const totalLoanMonths = this.calculatedTotalMonths;
-    const monthlyPrincipal = (this.basicForm.loanAmount * this.TEN_THOUSAND) / totalLoanMonths;
+    const monthlyPrincipal = this.basicForm.loanAmount / totalLoanMonths;
 
     for (let i = startMonth; i <= endMonth; i++) {
       const monthlyInterest = remainingPrincipal * monthlyRate;
@@ -994,9 +1098,9 @@ export default class HousingFund extends Vue {
    */
   handleCalculate(): void {
     // 确保所有提前还款都有计算好的期数
-    this.prepayments.forEach(row => {
+    this.prepaymentList.forEach(row => {
       if (row.repaymentDate) {
-        row.month = this.handleCalculatePrepaymentMonth(row.repaymentDate);
+        row.month = this.handleCalculatePeriod(row.repaymentDate);
       }
     });
 
@@ -1019,7 +1123,7 @@ export default class HousingFund extends Vue {
     this.handleCalculateEndDate();
 
     // 计算固定利率总利息和还款计划
-    const fixedResult = this.handleCalculateEqualPrincipal(this.basicForm.loanAmount * this.TEN_THOUSAND, this.fixedRate, this.totalMonths);
+    const fixedResult = this.handleCalculateEqualPrincipal(this.basicForm.loanAmount, this.fixedRate, this.totalMonths);
     this.fixedTotalInterest = fixedResult.totalInterest;
     this.repaymentSchedule = fixedResult.schedule;
 
@@ -1027,10 +1131,10 @@ export default class HousingFund extends Vue {
     this.floatingTotalInterest = this.handleCalculateFloatingInterest();
 
     // 计算多次提前还款的影响
-    this.handleCalculatePrepayments();
+    // this.handleCalculatePrepayments();
 
     // 根据是否有提前还款选择显示哪种还款计划
-    const hasPrepayments = this.prepayments.some(p => p.amount > 0);
+    const hasPrepayments = this.prepaymentList.some(p => p.amount > 0);
     if (hasPrepayments && this.actualRepaymentSchedule.length > 0) {
       // 使用实际还款计划（包含提前还款）
       this.repaymentSchedule = this.actualRepaymentSchedule;
@@ -1050,8 +1154,13 @@ export default class HousingFund extends Vue {
   handleReset(): void {
     this.basicForm = cloneDeep(DEFAULT_BASIC_INFO); // 重置基本表单数据
     this.fixedRate = 3.1; // 重置固定利率
-    this.floatingRates = [{ startDate: this.basicForm.startDate, rate: 3.1 }]; // 重置浮动利率
-    this.prepayments = [{ amount: 0, repaymentDate: '', month: 0, type: 'shorten' }]; // 重置提前还款设置
+    // 使用当前日期初始化浮动利率
+    this.floatingRates = [{
+      startDate: this.basicForm.startDate || `${new Date().getFullYear()}-${(new Date().getMonth() + 1).toString().padStart(2, '0')}`,
+      rate: 3.1
+    }];
+    this.prepaymentList = cloneDeep(DEFAULT_RESET_PREPAYMENT_LIST); // 重置提前还款设置
+    this.rateList = cloneDeep(DEFAULT_RATE_LIST); // 重置利率列表
     this.showResults = false; // 隐藏计算结果
     this.currentPage = 1; // 重置当前页码
     this.pageSize = 12; // 重置每页显示条数
