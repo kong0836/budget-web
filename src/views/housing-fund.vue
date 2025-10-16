@@ -630,7 +630,7 @@ export default class HousingFund extends Vue {
   }
 
   // 计算多次提前还款
-  handleCalculateMultiplePrepayments(): void {
+  handleCalculatePrepayments(): void {
     const validPrepayments = this.prepaymentList
         .filter(p => p.amount > 0 && p.month > 0)
         .sort((a, b) => a.month - b.month);
@@ -968,7 +968,7 @@ export default class HousingFund extends Vue {
     this.floatingTotalInterest = this.handleCalculateFloatingInterest();
 
     // 计算多次提前还款的影响
-    this.handleCalculateMultiplePrepayments();
+    this.handleCalculatePrepayments();
 
     // 根据是否有提前还款选择显示哪种还款计划
     const hasPrepayments = this.prepaymentList.some(p => p.amount > 0);
