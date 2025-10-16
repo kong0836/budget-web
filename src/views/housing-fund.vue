@@ -681,7 +681,7 @@ export default class HousingFund extends Vue {
    * 计算多次提前还款的影响
    * 处理提前还款对贷款期限、月供金额和利息支出的影响
    */
-  handleCalculateMultiplePrepayments(): void {
+  handleCalculatePrepayments(): void {
     // 过滤有效且按时间排序的提前还款记录
     const validPrepayments = this.prepayments
         .filter(p => p.amount > 0 && p.month > 0)
@@ -1027,7 +1027,7 @@ export default class HousingFund extends Vue {
     this.floatingTotalInterest = this.handleCalculateFloatingInterest();
 
     // 计算多次提前还款的影响
-    this.handleCalculateMultiplePrepayments();
+    this.handleCalculatePrepayments();
 
     // 根据是否有提前还款选择显示哪种还款计划
     const hasPrepayments = this.prepayments.some(p => p.amount > 0);
