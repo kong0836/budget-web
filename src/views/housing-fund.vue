@@ -233,6 +233,10 @@
                 align="center"
                 prop="saveInterest"></el-table-column>
               <el-table-column
+                  label="剩余期数"
+                  align="center"
+                  prop="remainingMonths"></el-table-column>
+              <el-table-column
                 label="新结束日期"
                 align="center"
                 prop="newEndDate"></el-table-column>
@@ -346,11 +350,6 @@ export default class HousingFund extends Vue {
   basicForm = {
     loanAmount: 50,
     loanYears: 30,
-  };
-
-  rateForm = {
-    rateType: 'fixed',
-    fixedRate: 3.1,
   };
 
   rateList = [
@@ -663,6 +662,7 @@ export default class HousingFund extends Vue {
           month: prepayment.month,
           type: prepayment.type === 'shorten' ? '缩短期限' : '减少月供',
           saveInterest: this.handleFormatCurrency(saveInterest),
+          remainingMonths: '贷款已还清',
           newEndDate: '贷款已还清'
         });
 
@@ -698,6 +698,7 @@ export default class HousingFund extends Vue {
         month: prepayment.month,
         type: prepayment.type === 'shorten' ? '缩短期限' : '减少月供',
         saveInterest: this.handleFormatCurrency(saveInterest),
+        remainingMonths: newMonths,
         newEndDate: this.handleGetEndDate(this.startYear, this.startMonth, prepayment.month + newMonths)
       });
 
