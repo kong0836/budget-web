@@ -5,30 +5,39 @@
 
       <h3>基本信息</h3>
       <el-form
-        :model="basicForm"
-        ref="basicForm"
-        :label-width="LABEL_WIDTH">
+          ref="basicForm"
+          :label-width="LABEL_WIDTH"
+          :model="basicForm">
         <el-form-item label="贷款总额" prop="loanAmount">
           <el-input
               v-model="basicForm.loanAmount"
-            placeholder="请输入贷款总额（元）"
-            type="number">
+              placeholder="请输入贷款总额（元）"
+              type="number">
           </el-input>
         </el-form-item>
         <el-form-item label="贷款年限" prop="loanYears">
           <el-select v-model="basicForm.loanYears">
             <el-option
-              v-for="item in loadYearOptions"
-              :key="item.value"
-              :value="item.value"
-              :label="item.label"/>
+                v-for="item in loadYearOptions"
+                :key="item.value"
+                :label="item.label"
+                :value="item.value"/>
           </el-select>
+        </el-form-item>
+        <el-form-item label="每月还款日期" prop="repaymentDate">
+          <el-date-picker
+              v-model="basicForm.repaymentDate"
+              format="dd"
+              placeholder="选择还款日期"
+              type="date"
+              value-format="dd">
+          </el-date-picker>
         </el-form-item>
         <el-form-item label="首次还款日期" prop="startDate">
           <el-date-picker
               v-model="basicForm.startDate"
+              placeholder="选择还款年月"
               type="date"
-placeholder="选择还款年月"
               value-format="yyyy-MM-dd">
           </el-date-picker>
         </el-form-item>
@@ -36,60 +45,61 @@ placeholder="选择还款年月"
 
       <h3>利率设置</h3>
       <el-button
-        type="primary"
-        size="small"
-        @click="handleAddRateRow">添加利率行</el-button>
+          size="small"
+          type="primary"
+          @click="handleAddRateRow">添加利率行
+      </el-button>
       <el-table
-        :data="rateList"
-        border
-        stripe>
+          :data="rateList"
+          border
+          stripe>
         <el-table-column
-            label="开始日期"
             align="center"
+            label="开始日期"
             prop="startDate">
           <template v-slot="{row}">
             <el-date-picker
-              v-model="row.startDate"
-              type="date"
-              placeholder="选择还款年月"
-              format="yyyy年MM月"
-              value-format="yyyy-MM"/>
+                v-model="row.startDate"
+                format="yyyy年MM月"
+                placeholder="选择还款年月"
+                type="date"
+                value-format="yyyy-MM"/>
           </template>
         </el-table-column>
         <el-table-column
-            label="结束日期"
             align="center"
+            label="结束日期"
             prop="endDate">
           <template v-slot="{row}">
             <el-date-picker
-              v-model="row.endDate"
-              type="month"
-              placeholder="选择还款年月"
-              format="yyyy年MM月"
-              value-format="yyyy-MM"/>
+                v-model="row.endDate"
+                format="yyyy年MM月"
+                placeholder="选择还款年月"
+                type="month"
+                value-format="yyyy-MM"/>
           </template>
         </el-table-column>
         <el-table-column
-            label="年利率（%）"
             align="center"
+            label="年利率（%）"
             prop="fixedRate">
           <template v-slot="{row}">
             <el-input
-              v-model="row.fixedRate"
-              placeholder="请输入年利率"
-              type="number"/>
+                v-model="row.fixedRate"
+                placeholder="请输入年利率"
+                type="number"/>
           </template>
         </el-table-column>
         <el-table-column
-            label="操作"
             align="center"
+            label="操作"
             width="80">
           <template v-slot="{$index}">
             <el-button
-              v-if="rateList.length > 1"
-              size="small"
-              type="text"
-              @click="handleRemoveRateRow($index)">删除
+                v-if="rateList.length > 1"
+                size="small"
+                type="text"
+                @click="handleRemoveRateRow($index)">删除
             </el-button>
           </template>
         </el-table-column>
@@ -97,49 +107,50 @@ placeholder="选择还款年月"
 
       <h3>提前还款设置</h3>
       <el-button
-        type="primary"
-        size="small"
-        @click="handleAddPrepayment">添加提前还款</el-button>
+          size="small"
+          type="primary"
+          @click="handleAddPrepayment">添加提前还款
+      </el-button>
       <el-table
-        :data="prepayments"
-        border
-        stripe>
+          :data="prepayments"
+          border
+          stripe>
         <el-table-column
-            label="还款金额（元）"
             align="center"
+            label="还款金额（元）"
             prop="amount">
           <template v-slot="{row}">
             <el-input
-              v-model="row.amount"
-              placeholder="请输入还款金额"
-              type="number"/>
+                v-model="row.amount"
+                placeholder="请输入还款金额"
+                type="number"/>
           </template>
         </el-table-column>
         <el-table-column
-            label="还款时间"
             align="center"
+            label="还款时间"
             prop="repaymentDate">
           <template v-slot="{row}">
             <el-date-picker
-              v-model="row.repaymentDate"
-              type="date"
-              placeholder="选择还款时间"
-              value-format="yyyy-MM-dd"
-              @change="handleUpdatePrepaymentMonth(row)"/>
+                v-model="row.repaymentDate"
+                placeholder="选择还款时间"
+                type="date"
+                value-format="yyyy-MM-dd"
+                @change="handleUpdatePrepaymentMonth(row)"/>
           </template>
         </el-table-column>
         <el-table-column
-          label="对应期数"
-          align="center"
-          prop="month"
-          width="100">
+            align="center"
+            label="对应期数"
+            prop="month"
+            width="100">
           <template v-slot="{row}">
             <span>{{ row.month || '-' }}</span>
           </template>
         </el-table-column>
         <el-table-column
-            label="还款方式"
             align="center"
+            label="还款方式"
             prop="type">
           <template v-slot="{row}">
             <el-radio-group v-model="row.type" size="small">
@@ -149,15 +160,15 @@ placeholder="选择还款年月"
           </template>
         </el-table-column>
         <el-table-column
-            label="操作"
             align="center"
+            label="操作"
             width="80">
           <template v-slot="{$index}">
             <el-button
-              v-if="prepayments.length > 1"
-              size="small"
-              type="text"
-              @click="handleRemovePrepayment($index)">删除
+                v-if="prepayments.length > 1"
+                size="small"
+                type="text"
+                @click="handleRemovePrepayment($index)">删除
             </el-button>
           </template>
         </el-table-column>
@@ -186,7 +197,7 @@ placeholder="选择还款年月"
           <p><strong>贷款期限：</strong>{{ basicForm.loanYears }}年（{{ totalMonths }}个月）</p>
           <p><strong>开始还款：</strong>{{ basicForm.startDate ? basicForm.startDate.replace('-', '年') + '月' : '' }}
           </p>
-        <p><strong>结束还款：</strong>{{ endYear }}年{{ endMonth }}月</p>
+          <p><strong>结束还款：</strong>{{ endYear }}年{{ endMonth }}月</p>
         </div>
 
         <div class="interest-results">
@@ -212,33 +223,33 @@ placeholder="选择还款年月"
                 border
                 stripe>
               <el-table-column
-                label="序号"
-                align="center"
-                prop="index"></el-table-column>
-              <el-table-column
-                label="还款金额"
-                align="center"
-                prop="amount"></el-table-column>
-              <el-table-column
-                label="还款时间"
-                align="center"
-                prop="month"></el-table-column>
-              <el-table-column
-                label="还款方式"
-                align="center"
-                prop="type"></el-table-column>
-              <el-table-column
-                label="节省利息"
-                align="center"
-                prop="saveInterest"></el-table-column>
-              <el-table-column
-                  label="剩余期数"
                   align="center"
+                  label="序号"
+                  prop="index"></el-table-column>
+              <el-table-column
+                  align="center"
+                  label="还款金额"
+                  prop="amount"></el-table-column>
+              <el-table-column
+                  align="center"
+                  label="还款时间"
+                  prop="month"></el-table-column>
+              <el-table-column
+                  align="center"
+                  label="还款方式"
+                  prop="type"></el-table-column>
+              <el-table-column
+                  align="center"
+                  label="节省利息"
+                  prop="saveInterest"></el-table-column>
+              <el-table-column
+                  align="center"
+                  label="剩余期数"
                   prop="remainingMonths"></el-table-column>
               <el-table-column
-                label="新结束日期"
-                align="center"
-prop="newEndDate"></el-table-column>
+                  align="center"
+                  label="新结束日期"
+                  prop="newEndDate"></el-table-column>
             </el-table>
           </div>
         </div>
@@ -247,26 +258,26 @@ prop="newEndDate"></el-table-column>
           <h5>完整还款计划</h5>
           <div class="schedule-controls">
             <el-input
-              v-model="searchTerm"
-              clearable
-              placeholder="搜索期数或日期"
-              style="width: 200px; margin-right: 10px;"></el-input>
+                v-model="searchTerm"
+                clearable
+                placeholder="搜索期数或日期"
+                style="width: 200px; margin-right: 10px;"></el-input>
             <el-select
-              v-model="pageSize"
-              placeholder="每页显示条数"
-              style="width: 120px;">
+                v-model="pageSize"
+                placeholder="每页显示条数"
+                style="width: 120px;">
               <el-option
-                :value="12"
-                label="12条"></el-option>
+                  :value="12"
+                  label="12条"></el-option>
               <el-option
-                :value="24"
-                label="24条"></el-option>
+                  :value="24"
+                  label="24条"></el-option>
               <el-option
-                :value="50"
-                label="50条"></el-option>
+                  :value="50"
+                  label="50条"></el-option>
               <el-option
-                :value="100"
-                label="100条"></el-option>
+                  :value="100"
+                  label="100条"></el-option>
             </el-select>
           </div>
 
@@ -275,35 +286,35 @@ prop="newEndDate"></el-table-column>
                     border
                     style="width: 100%; margin-top: 15px;">
             <el-table-column
-              label="期数"
-              prop="month"
-              sortable></el-table-column>
+                label="期数"
+                prop="month"
+                sortable></el-table-column>
             <el-table-column
-              label="还款日期"
-              prop="date"
-              sortable></el-table-column>
+                label="还款日期"
+                prop="date"
+                sortable></el-table-column>
             <el-table-column
-              label="本金"
-              prop="principal"
-              sortable></el-table-column>
+                label="本金"
+                prop="principal"
+                sortable></el-table-column>
             <el-table-column
-              label="利息"
-prop="interest"
-              sortable></el-table-column>
+                label="利息"
+                prop="interest"
+                sortable></el-table-column>
             <el-table-column
-              label="月供"
-              prop="total"
-              sortable></el-table-column>
+                label="月供"
+                prop="total"
+                sortable></el-table-column>
             <el-table-column
-              label="剩余本金"
-              prop="remaining"
-              sortable></el-table-column>
+                label="剩余本金"
+                prop="remaining"
+                sortable></el-table-column>
             <el-table-column label="操作">
               <template v-slot="{ row }">
                 <el-button
-                  size="small"
-                  type="text"
-                  @click="handleViewDetail(row)">详情
+                    size="small"
+                    type="text"
+                    @click="handleViewDetail(row)">详情
                 </el-button>
               </template>
             </el-table-column>
@@ -326,6 +337,14 @@ prop="interest"
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
 import moment from 'moment';
+import { cloneDeep } from "lodash";
+
+interface BasicInfo {
+  loanAmount: number;
+  loanYears: number;
+  repaymentDate: string;
+  startDate: string;
+}
 
 interface FloatingRate {
   startDate: string,
@@ -338,17 +357,18 @@ interface Prepayment {
   month: number;
   type: string;
 }
+
+const DEFAULT_BASIC_INFO: Partial<BasicInfo> = {
+  loanAmount: 1000000, // 修改为100万元对应的元单位值
+  loanYears: 30,
+  repaymentDate: '',
+  startDate: '',
+};
 // 在类的顶部定义常量
 @Component
 export default class HousingFund extends Vue {
-  // 常量定义
-  private TEN_THOUSAND = 10000;
   LABEL_WIDTH = '100px';
-  basicForm = {
-    loanAmount: 1000000, // 修改为100万元对应的元单位值
-    loanYears: 30,
-    startDate: `${moment('2024-01-01').format('YYYY-MM-DD')}`,
-  };
+  basicForm: Partial<BasicInfo> = cloneDeep(DEFAULT_BASIC_INFO);
   rateList = [
     { startDate: '2024-01', endDate: '2025-01', fixedRate: 3.1 },
     { startDate: '2025-01', endDate: '2025-01', fixedRate: 2.85 },
@@ -389,6 +409,8 @@ export default class HousingFund extends Vue {
   currentPage = 1;
   pageSize = 12;
   searchTerm = '';
+  // 常量定义
+  private TEN_THOUSAND = 10000;
 
   // 计算总月数
   get calculatedTotalMonths(): number {
@@ -543,16 +565,16 @@ export default class HousingFund extends Vue {
 
     // 对利率期间按开始日期排序并转换为期数
     const sortedRates = [...this.floatingRates]
-      .filter(period => period.startDate && period.rate > 0)
-      .sort((a, b) => {
-        const monthA = this.handleConvertDateToMonthIndex(a.startDate);
-        const monthB = this.handleConvertDateToMonthIndex(b.startDate);
-        return monthA - monthB;
-      })
-      .map(period => ({
-        startMonth: this.handleConvertDateToMonthIndex(period.startDate),
-        rate: period.rate
-      }));
+        .filter(period => period.startDate && period.rate > 0)
+        .sort((a, b) => {
+          const monthA = this.handleConvertDateToMonthIndex(a.startDate);
+          const monthB = this.handleConvertDateToMonthIndex(b.startDate);
+          return monthA - monthB;
+        })
+        .map(period => ({
+          startMonth: this.handleConvertDateToMonthIndex(period.startDate),
+          rate: period.rate
+        }));
 
     // 如果没有有效的利率期间，返回0
     if (sortedRates.length === 0) {
@@ -796,6 +818,7 @@ export default class HousingFund extends Vue {
 
     return `${endMoment.year()}年${endMoment.month() + 1}月`;
   }
+
   // 格式化货币
   handleFormatCurrency(amount = 0): string {
     console.log('formatCurrency', amount);
@@ -836,6 +859,7 @@ export default class HousingFund extends Vue {
       type: 'info'
     });
   }
+
   // 主计算函数
   handleCalculate(): void {
     // 确保所有提前还款都有计算好的期数
@@ -888,11 +912,7 @@ export default class HousingFund extends Vue {
 
   // 重置
   handleReset(): void {
-    this.basicForm = {
-      loanAmount: 50,
-      loanYears: 30,
-      startDate: moment().format('YYYY-MM'),
-    };
+    this.basicForm = cloneDeep(DEFAULT_BASIC_INFO);
     this.fixedRate = 3.1;
     this.floatingRates = [{ startDate: this.basicForm.startDate, rate: 3.1 }];
     this.prepayments = [{ amount: 0, repaymentDate: '', month: 0, type: 'shorten' }];
