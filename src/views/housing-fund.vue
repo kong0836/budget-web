@@ -403,8 +403,8 @@ const DEFAULT_BASIC_INFO: Partial<BasicInfo> = {
  * 默认利率列表配置
  */
 const DEFAULT_RATE_LIST: RateListItem[] = [
-  { startDate: '2024-01', endDate: '2025-01', fixedRate: 3.1 },
-  { startDate: '2025-01', endDate: '2025-01', fixedRate: 2.85 },
+  { startDate: '2024-01', endDate: '2024-12', fixedRate: 3.1 },
+  { startDate: '2025-01', endDate: '2025-12', fixedRate: 2.85 },
   { startDate: '2026-01', endDate: '', fixedRate: 2.6 },
 ];
 
@@ -1051,7 +1051,6 @@ export default class HousingFund extends Vue {
    * @returns 格式化后的货币字符串（带¥符号和千位分隔符）
    */
   handleFormatCurrency(amount = 0): string {
-    console.log('formatCurrency', amount);
     // 确保amount是数字类型
     const numAmount = Number(amount);
     // 检查是否为有效数字，如果不是则使用0作为默认值
@@ -1146,6 +1145,7 @@ export default class HousingFund extends Vue {
     // 计算多次提前还款的影响
     // this.handleCalculatePrepayments();
 
+    console.log('this.actualRepaymentSchedule', this.actualRepaymentSchedule);
     // 根据是否有提前还款选择显示哪种还款计划
     const hasPrepayments = this.prepaymentList.some(p => p.amount > 0);
     if (hasPrepayments && this.actualRepaymentSchedule.length > 0) {
