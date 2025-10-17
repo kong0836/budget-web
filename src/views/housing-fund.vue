@@ -7,7 +7,8 @@
       <el-form
           ref="basicForm"
           :label-width="LABEL_WIDTH"
-          :model="basicForm">
+          :model="basicForm"
+          :rules="basicFormRules">
         <el-form-item label="贷款总额" prop="loanAmount">
           <el-input
               v-model="basicForm.loanAmount"
@@ -109,7 +110,8 @@
       <el-button
           size="small"
           type="primary"
-          @click="handleAddPrepayment">添加提前还款
+          @click="handleAddPrepayment">
+        添加提前还款
       </el-button>
       <el-table
           :data="prepaymentList"
@@ -351,6 +353,7 @@
 import { Component, Vue } from "vue-property-decorator";
 import moment from 'moment';
 import { cloneDeep } from "lodash";
+import { Form } from "element-ui";
 
 /**
  * 基本贷款信息接口定义
@@ -403,8 +406,8 @@ const DEFAULT_BASIC_INFO: Partial<BasicInfo> = {
  * 默认利率列表配置
  */
 const DEFAULT_RATE_LIST: RateListItem[] = [
-  { startDate: '2024-01', endDate: '2025-01', fixedRate: 3.1 },
-  { startDate: '2025-01', endDate: '2025-01', fixedRate: 2.85 },
+  { startDate: '2024-01', endDate: '2024-12', fixedRate: 3.1 },
+  { startDate: '2025-01', endDate: '2025-12', fixedRate: 2.85 },
   { startDate: '2026-01', endDate: '', fixedRate: 2.6 },
 ];
 
@@ -435,9 +438,15 @@ const DEFAULT_RESET_PREPAYMENT_LIST: Prepayment[] = [
 @Component
 export default class HousingFund extends Vue {
   // 表单标签宽度
-  LABEL_WIDTH = '100px';
+  LABEL_WIDTH = '120px';
   // 基本贷款信息表单数据
   basicForm: Partial<BasicInfo> = cloneDeep(DEFAULT_BASIC_INFO);
+  basicFormRules = {
+    loanAmount: { required: true, message: '请输入贷款总额', trigger: 'blur' },
+    loanYears: { required: true, message: '请选择贷款年限', trigger: 'change' },
+    repaymentDate: { required: true, message: '请输入每月还款日期', trigger: 'blur' },
+    startDate: { required: true, message: '请输入首次还款日期', trigger: 'blur' },
+  };
   // 利率列表数据
   rateList: RateListItem[] = cloneDeep(DEFAULT_RATE_LIST);
   // 贷款年限选项
@@ -1051,7 +1060,6 @@ export default class HousingFund extends Vue {
    * @returns 格式化后的货币字符串（带¥符号和千位分隔符）
    */
   handleFormatCurrency(amount = 0): string {
-    console.log('formatCurrency', amount);
     // 确保amount是数字类型
     const numAmount = Number(amount);
     // 检查是否为有效数字，如果不是则使用0作为默认值
@@ -1109,23 +1117,17 @@ export default class HousingFund extends Vue {
   /**
    * 主计算函数，整合所有计算逻辑
    */
-  handleCalculate(): void {
-    // 确保所有提前还款都有计算好的期数
+  async handleCalculate(): Promise<void> {
+    // 基本信息
+    await (this.$refs.basicForm as Form).validate();
+    // 提前还款
     this.prepaymentList.forEach(row => {
       if (row.repaymentDate) {
         row.month = this.handleCalculatePeriod(row.repaymentDate);
       }
     });
-
-    // 验证基本贷款信息
-    if (!this.basicForm.loanAmount || !this.basicForm.loanYears || !this.startYear || !this.startMonth) {
-      this.$message.error('请填写完整的贷款信息');
-      return;
-    }
-
-    // 验证浮动利率设置
+    // 利率设置
     const validRates = this.floatingRates.filter(period => period.startDate && period.rate > 0);
-
     if (validRates.length === 0) {
       this.$message.error('请至少设置一个有效的浮动利率期间');
       return;
@@ -1146,6 +1148,7 @@ export default class HousingFund extends Vue {
     // 计算多次提前还款的影响
     // this.handleCalculatePrepayments();
 
+    console.log('this.actualRepaymentSchedule', this.actualRepaymentSchedule);
     // 根据是否有提前还款选择显示哪种还款计划
     const hasPrepayments = this.prepaymentList.some(p => p.amount > 0);
     if (hasPrepayments && this.actualRepaymentSchedule.length > 0) {
