@@ -395,8 +395,8 @@ interface RateListItem {
 const DEFAULT_BASIC_INFO: Partial<BasicInfo> = {
   loanAmount: 1000000, // 100万元对应的元单位值
   loanYears: 30, // 默认贷款30年
-  repaymentDate: '', // 还款日期为空
-  startDate: '', // 开始日期为空
+  repaymentDate: '27', // 还款日期为空
+  startDate: '2024-04-27', // 开始日期为空
 };
 
 /**
