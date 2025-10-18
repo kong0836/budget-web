@@ -3,7 +3,7 @@ const path = require('path');
 
 module.exports = defineConfig({
   transpileDependencies: true,
-  publicPath: process.env.NODE_ENV === 'production' ? '/vue2/' : '/',
+  publicPath: process.env.NODE_ENV === 'production' ? '/budget-web/' : '/',
   configureWebpack: {
     resolve: {
       alias: {

@@ -18,5 +18,5 @@ git add -A
 git commit -m 'deploy to GitHub Pages'
 
 # 推送到 gh-pages 分支
-git push -f git@github.com:kong0836/vue2.git master:gh-pages
+git push -f git@github.com:kong0836/budget-web.git master:gh-pages
 cd -
