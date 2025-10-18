@@ -1,24 +1,21 @@
-# vite-vue2
+# budget-web
 
-## Project setup
+## 项目初始化
 ```
 npm install
 ```
 
-### Compiles and hot-reloads for development
+### 运行项目
 ```
 npm run serve
 ```
 
-### Compiles and minifies for production
+### 项目打包
 ```
 npm run build
 ```
 
-### Lints and fixes files
+### Lint 代码
 ```
-npm run lint
+npm run lint:fix
 ```
-
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
