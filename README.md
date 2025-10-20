@@ -2,7 +2,7 @@
 
 ## 项目初始化
 ```
-npm install
+npm run init
 ```
 
 ### 运行项目
