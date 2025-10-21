@@ -430,7 +430,7 @@ const DEFAULT_RESET_PREPAYMENT_LIST: Prepayment[] = [
  * 公积金贷款利息计算器组件
  */
 @Component
-export default class HousingFund extends Vue {
+export default class LoanList extends Vue {
   // 表单标签宽度
   LABEL_WIDTH = '120px';
   // 基本贷款信息表单数据

@@ -3,7 +3,6 @@
     <h3>基本信息</h3>
     <el-form
         ref="basicForm"
-        :label-width="LABEL_WIDTH"
         :model="basicForm"
         :rules="basicFormRules"
         label-position="top">
@@ -59,9 +58,23 @@ const DEFAULT_BASIC_INFO: Partial<BasicForm> = {
   startDate: '2024-04-27', // 开始日期为空
 };
 
-@Component({})
+@Component
 export default class BasicInfo extends Vue {
-  basicForm: Partial<BasicInfo> = cloneDeep(DEFAULT_BASIC_INFO);
+  basicForm: Partial<BasicForm> = cloneDeep(DEFAULT_BASIC_INFO);
+  basicFormRules = {
+    loanAmount: { required: true, message: '请输入贷款总额', trigger: 'blur' },
+    loanYears: { required: true, message: '请选择贷款年限', trigger: 'change' },
+    repaymentDate: { required: true, message: '请输入每月还款日期', trigger: 'blur' },
+    startDate: { required: true, message: '请输入首次还款日期', trigger: 'blur' },
+  };
+  // 贷款年限选项
+  loadYearOptions = [
+    { value: 5, label: '5年' },
+    { value: 10, label: '10年' },
+    { value: 15, label: '15年' },
+    { value: 20, label: '20年' },
+    { value: 30, label: '30年' },
+  ];
 }
 </script>
 
