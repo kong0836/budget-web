@@ -1,7 +1,7 @@
 <template>
   <div class="housing-fund">
     <div class="calculator-container">
-      <div class="calculator-header">公积金贷款利息计算器</div>
+      <div class="calculator-header">贷款利息计算器</div>
 
       <h3>基本信息</h3>
       <el-form
@@ -1187,7 +1187,6 @@ export default class HousingFund extends Vue {
 
 <style lang="scss" scoped>
 .housing-fund {
-  height: 100vh;
   padding: 20px;
   background-color: #f5f7fa;
 
