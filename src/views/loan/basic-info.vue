@@ -1,0 +1,79 @@
+<template>
+  <div class="basic-info">
+    <h3>基本信息</h3>
+    <el-form
+        ref="basicForm"
+        :label-width="LABEL_WIDTH"
+        :model="basicForm"
+        :rules="basicFormRules"
+        label-position="top">
+      <el-form-item label="贷款总额" prop="loanAmount">
+        <el-input
+            v-model="basicForm.loanAmount"
+            placeholder="请输入贷款总额（元）"
+            type="number">
+        </el-input>
+      </el-form-item>
+      <el-form-item label="贷款年限" prop="loanYears">
+        <el-select v-model="basicForm.loanYears">
+          <el-option
+              v-for="item in loadYearOptions"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"/>
+        </el-select>
+      </el-form-item>
+      <el-form-item label="每月还款日期" prop="repaymentDate">
+        <el-date-picker
+            v-model="basicForm.repaymentDate"
+            format="dd"
+            placeholder="选择还款日期"
+            type="date"
+            value-format="dd">
+        </el-date-picker>
+      </el-form-item>
+      <el-form-item label="首次还款日期" prop="startDate">
+        <el-date-picker
+            v-model="basicForm.startDate"
+            placeholder="选择还款年月"
+            type="date"
+            value-format="yyyy-MM-dd">
+        </el-date-picker>
+      </el-form-item>
+    </el-form>
+  </div>
+</template>
+
+<script lang="ts">
+import { Component, Vue } from 'vue-property-decorator';
+import { cloneDeep } from "lodash";
+import { BasicForm } from "@/types/loand";
+
+/**
+ * 默认基本贷款信息配置
+ */
+const DEFAULT_BASIC_INFO: Partial<BasicForm> = {
+  loanAmount: 1000000, // 100万元对应的元单位值
+  loanYears: 30, // 默认贷款30年
+  repaymentDate: '27', // 还款日期为空
+  startDate: '2024-04-27', // 开始日期为空
+};
+
+@Component({})
+export default class BasicInfo extends Vue {
+  basicForm: Partial<BasicInfo> = cloneDeep(DEFAULT_BASIC_INFO);
+}
+</script>
+
+<style lang="scss" scoped>
+.basic-info {
+  .el-form {
+    width: 10%;
+
+    .el-input,
+    .el-select {
+      width: 100%;
+    }
+  }
+}
+</style>
