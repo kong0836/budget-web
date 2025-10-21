@@ -1202,7 +1202,7 @@ export default class LoanList extends Vue {
 
     .basic-info {
       .el-form {
-        width: 10%;
+        width: 15%;
 
         .el-input,
         .el-select {
