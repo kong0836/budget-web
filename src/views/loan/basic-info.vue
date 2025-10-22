@@ -54,7 +54,7 @@
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
 import { cloneDeep } from "lodash";
-import { BasicForm } from "@/types/loand";
+import { BasicForm } from "@/types/loan";
 import { Form } from "element-ui";
 
 /**

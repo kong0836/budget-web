@@ -5,67 +5,7 @@
 
       <basic-info @update="handleUpdateBasicInfo"/>
 
-      <h3>利率设置</h3>
-      <el-button
-          size="small"
-          type="primary"
-          @click="handleAddRateRow">添加利率行
-      </el-button>
-      <el-table
-          :data="rateList"
-          border
-          stripe>
-        <el-table-column
-            align="center"
-            label="开始日期"
-            prop="startDate">
-          <template v-slot="{row}">
-            <el-date-picker
-                v-model="row.startDate"
-                format="yyyy年MM月"
-                placeholder="选择还款年月"
-                type="date"
-                value-format="yyyy-MM"/>
-          </template>
-        </el-table-column>
-        <el-table-column
-            align="center"
-            label="结束日期"
-            prop="endDate">
-          <template v-slot="{row}">
-            <el-date-picker
-                v-model="row.endDate"
-                format="yyyy年MM月"
-                placeholder="选择还款年月"
-                type="month"
-                value-format="yyyy-MM"/>
-          </template>
-        </el-table-column>
-        <el-table-column
-            align="center"
-            label="年利率（%）"
-            prop="fixedRate">
-          <template v-slot="{row}">
-            <el-input
-                v-model="row.fixedRate"
-                placeholder="请输入年利率"
-                type="number"/>
-          </template>
-        </el-table-column>
-        <el-table-column
-            align="center"
-            label="操作"
-            width="80">
-          <template v-slot="{$index}">
-            <el-button
-                v-if="rateList.length > 1"
-                size="small"
-                type="text"
-                @click="handleRemoveRateRow($index)">删除
-            </el-button>
-          </template>
-        </el-table-column>
-      </el-table>
+      <rate-list @update="handleUpdateRateInfo"/>
 
       <h3>提前还款设置</h3>
       <el-button
@@ -315,51 +255,9 @@ import { Component, Vue } from "vue-property-decorator";
 import moment from 'moment';
 import { cloneDeep } from "lodash";
 import { Form } from "element-ui";
-import { BasicForm } from "@/types/loand";
+import { BasicForm, Prepayment, RateInfo } from "@/types/loan";
 import BasicInfo from "@/views/loan/basic-info.vue";
-
-/**
- * 浮动利率接口定义
- */
-interface FloatingRate {
-  startDate: string; // 开始日期
-  rate: number; // 年利率
-}
-
-/**
- * 提前还款信息接口定义
- */
-interface Prepayment {
-  amount: number; // 还款金额
-  repaymentDate: string; // 还款时间
-  month: number; // 对应期数
-  type: string; // 还款方式: 'shorten'(缩短期限)或'reduce'(减少月供)
-}
-
-/**
- * 利率列表项接口定义
- */
-interface RateListItem {
-  startDate: string;
-  endDate: string;
-  fixedRate: number;
-}
-
-/**
- * 默认利率列表配置
- */
-const DEFAULT_RATE_LIST: RateListItem[] = [
-  { startDate: '2024-01', endDate: '2024-12', fixedRate: 3.1 },
-  { startDate: '2025-01', endDate: '2025-12', fixedRate: 2.85 },
-  { startDate: '2026-01', endDate: '', fixedRate: 2.6 },
-];
-
-/**
- * 默认浮动利率配置
- */
-const DEFAULT_FLOATING_RATES: FloatingRate[] = [
-  { startDate: `${new Date().getFullYear()}-${(new Date().getMonth() + 1).toString().padStart(2, '0')}`, rate: 3.1 }
-];
+import RateList from "@/views/loan/rate-list.vue";
 
 /**
  * 默认提前还款列表配置
@@ -369,35 +267,22 @@ const DEFAULT_PREPAYMENT_LIST: Prepayment[] = [
 ];
 
 /**
- * 默认重置提前还款列表配置
- */
-const DEFAULT_RESET_PREPAYMENT_LIST: Prepayment[] = [
-  { amount: 0, repaymentDate: '', month: 0, type: 'shorten' }
-];
-
-/**
  * 公积金贷款利息计算器组件
  */
 @Component({
-  components: { BasicInfo }
+  components: { RateList, BasicInfo }
 })
 export default class LoanList extends Vue {
   // 表单标签宽度
   LABEL_WIDTH = '120px';
   // 基本贷款信息表单数据
   basicInfo: Partial<BasicForm> = {};
-  basicFormRules = {
-    loanAmount: { required: true, message: '请输入贷款总额', trigger: 'blur' },
-    loanYears: { required: true, message: '请选择贷款年限', trigger: 'change' },
-    repaymentDate: { required: true, message: '请输入每月还款日期', trigger: 'blur' },
-    startDate: { required: true, message: '请输入首次还款日期', trigger: 'blur' },
-  };
   // 利率列表数据
-  rateList: RateListItem[] = cloneDeep(DEFAULT_RATE_LIST);
+  rateList: RateInfo[] = [];
   // 固定利率值
   fixedRate = 3.1;
-  // 浮动利率设置（按期数）
-  floatingRates: FloatingRate[] = cloneDeep(DEFAULT_FLOATING_RATES);
+  // @deprecated 浮动利率设置（按期数）
+  floatingRates: any[] = [];
   // 多次提前还款设置
   prepaymentList: Prepayment[] = cloneDeep(DEFAULT_PREPAYMENT_LIST);
 
@@ -492,25 +377,8 @@ export default class LoanList extends Vue {
     this.basicInfo = cloneDeep(basicInfo);
   }
 
-  /**
-   * 添加利率行
-   */
-  handleAddRateRow(): void {
-    this.rateList.push({
-      startDate: '',
-      endDate: '',
-      fixedRate: 0
-    });
-  }
-
-  /**
-   * 删除利率行
-   * @param index 要删除的行索引
-   */
-  handleRemoveRateRow(index: number): void {
-    if (this.rateList.length > 1) {
-      this.rateList.splice(index, 1);
-    }
+  handleUpdateRateInfo(rateList: RateInfo[]) {
+    this.rateList = cloneDeep(rateList);
   }
 
   /**
@@ -579,7 +447,7 @@ export default class LoanList extends Vue {
 
     // 遍历利率列表，找到当前时间对应的利率
     for (const rateItem of this.rateList) {
-      if (!rateItem.startDate || !rateItem.fixedRate) continue;
+      if (!rateItem.startDate || !rateItem.rate) continue;
 
       const startDate = moment(rateItem.startDate, 'YYYY-MM');
       let endDate = null;
@@ -595,12 +463,12 @@ export default class LoanList extends Vue {
           continue;
         }
 
-        return rateItem.fixedRate;
+        return rateItem.rate;
       }
     }
 
     // 如果当前时间不在任何利率区间内，返回第一个利率或默认利率
-    return this.rateList[0]?.fixedRate || this.fixedRate;
+    return this.rateList[0]?.rate || this.fixedRate;
   }
 
   /**
@@ -1109,18 +977,7 @@ export default class LoanList extends Vue {
    * 重置所有表单数据和计算结果
    */
   handleReset(): void {
-    this.fixedRate = 3.1; // 重置固定利率
-    // 使用当前日期初始化浮动利率
-    this.floatingRates = [{
-      startDate: this.basicInfo.startDate || `${new Date().getFullYear()}-${(new Date().getMonth() + 1).toString().padStart(2, '0')}`,
-      rate: 3.1
-    }];
-    this.prepaymentList = cloneDeep(DEFAULT_RESET_PREPAYMENT_LIST); // 重置提前还款设置
-    this.rateList = cloneDeep(DEFAULT_RATE_LIST); // 重置利率列表
-    this.showResults = false; // 隐藏计算结果
-    this.currentPage = 1; // 重置当前页码
-    this.pageSize = 12; // 重置每页显示条数
-    this.searchTerm = ''; // 清空搜索条件
+    console.log('handleReset');
   }
 }
 </script>
