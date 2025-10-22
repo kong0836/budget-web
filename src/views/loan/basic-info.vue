@@ -39,6 +39,9 @@
             value-format="yyyy-MM-dd">
         </el-date-picker>
       </el-form-item>
+      <el-form-item>
+        <el-button type="primary" @click="handleSave">保存</el-button>
+      </el-form-item>
     </el-form>
   </div>
 </template>
@@ -47,6 +50,7 @@
 import { Component, Vue } from 'vue-property-decorator';
 import { cloneDeep } from "lodash";
 import { BasicForm } from "@/types/loand";
+import { Form } from "element-ui";
 
 /**
  * 默认基本贷款信息配置
@@ -75,6 +79,15 @@ export default class BasicInfo extends Vue {
     { value: 20, label: '20年' },
     { value: 30, label: '30年' },
   ];
+
+  async handleSave() {
+    try {
+      await (this.$refs.basicForm as Form).validate();
+      this.$emit('update', this.basicForm);
+    } catch (error) {
+      console.error(error);
+    }
+  }
 }
 </script>
 

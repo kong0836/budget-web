@@ -3,49 +3,7 @@
     <div class="calculator-container">
       <div class="calculator-header">贷款利息计算器</div>
 
-      <div class="basic-info">
-        <h3>基本信息</h3>
-        <el-form
-            ref="basicForm"
-            :label-width="LABEL_WIDTH"
-            :model="basicForm"
-            :rules="basicFormRules"
-            label-position="top">
-          <el-form-item label="贷款总额" prop="loanAmount">
-            <el-input
-                v-model="basicForm.loanAmount"
-                placeholder="请输入贷款总额（元）"
-                type="number">
-            </el-input>
-          </el-form-item>
-          <el-form-item label="贷款年限" prop="loanYears">
-            <el-select v-model="basicForm.loanYears">
-              <el-option
-                  v-for="item in loadYearOptions"
-                  :key="item.value"
-                  :label="item.label"
-                  :value="item.value"/>
-            </el-select>
-          </el-form-item>
-          <el-form-item label="每月还款日期" prop="repaymentDate">
-            <el-date-picker
-                v-model="basicForm.repaymentDate"
-                format="dd"
-                placeholder="选择还款日期"
-                type="date"
-                value-format="dd">
-            </el-date-picker>
-          </el-form-item>
-          <el-form-item label="首次还款日期" prop="startDate">
-            <el-date-picker
-                v-model="basicForm.startDate"
-                placeholder="选择还款年月"
-                type="date"
-                value-format="yyyy-MM-dd">
-            </el-date-picker>
-          </el-form-item>
-        </el-form>
-      </div>
+      <basic-info @update="handleUpdateBasicInfo"/>
 
       <h3>利率设置</h3>
       <el-button
@@ -202,9 +160,9 @@
         <h4>计算结果</h4>
 
         <div class="basic-info">
-          <p><strong>贷款总额：</strong>{{ handleFormatCurrency(basicForm.loanAmount) }}</p>
-          <p><strong>贷款期限：</strong>{{ basicForm.loanYears }}年（{{ totalMonths }}个月）</p>
-          <p><strong>开始还款：</strong>{{ basicForm.startDate }}
+          <p><strong>贷款总额：</strong>{{ handleFormatCurrency(basicInfo.loanAmount) }}</p>
+          <p><strong>贷款期限：</strong>{{ basicInfo.loanYears }}年（{{ totalMonths }}个月）</p>
+          <p><strong>开始还款：</strong>{{ basicInfo.startDate }}
           </p>
           <p><strong>结束还款：</strong>{{ endYear }}年{{ endMonth }}月</p>
         </div>
@@ -358,6 +316,7 @@ import moment from 'moment';
 import { cloneDeep } from "lodash";
 import { Form } from "element-ui";
 import { BasicForm } from "@/types/loand";
+import BasicInfo from "@/views/loan/basic-info.vue";
 
 /**
  * 浮动利率接口定义
@@ -385,16 +344,6 @@ interface RateListItem {
   endDate: string;
   fixedRate: number;
 }
-
-/**
- * 默认基本贷款信息配置
- */
-const DEFAULT_BASIC_INFO: Partial<BasicForm> = {
-  loanAmount: 1000000, // 100万元对应的元单位值
-  loanYears: 30, // 默认贷款30年
-  repaymentDate: '27', // 还款日期为空
-  startDate: '2024-04-27', // 开始日期为空
-};
 
 /**
  * 默认利率列表配置
@@ -429,12 +378,14 @@ const DEFAULT_RESET_PREPAYMENT_LIST: Prepayment[] = [
 /**
  * 公积金贷款利息计算器组件
  */
-@Component
+@Component({
+  components: { BasicInfo }
+})
 export default class LoanList extends Vue {
   // 表单标签宽度
   LABEL_WIDTH = '120px';
   // 基本贷款信息表单数据
-  basicForm: Partial<BasicForm> = cloneDeep(DEFAULT_BASIC_INFO);
+  basicInfo: Partial<BasicForm> = {};
   basicFormRules = {
     loanAmount: { required: true, message: '请输入贷款总额', trigger: 'blur' },
     loanYears: { required: true, message: '请选择贷款年限', trigger: 'change' },
@@ -443,14 +394,6 @@ export default class LoanList extends Vue {
   };
   // 利率列表数据
   rateList: RateListItem[] = cloneDeep(DEFAULT_RATE_LIST);
-  // 贷款年限选项
-  loadYearOptions = [
-    { value: 5, label: '5年' },
-    { value: 10, label: '10年' },
-    { value: 15, label: '15年' },
-    { value: 20, label: '20年' },
-    { value: 30, label: '30年' },
-  ];
   // 固定利率值
   fixedRate = 3.1;
   // 浮动利率设置（按期数）
@@ -482,7 +425,7 @@ export default class LoanList extends Vue {
    * @returns 贷款总月数
    */
   get calculatedTotalMonths(): number {
-    return this.basicForm.loanYears * 12;
+    return this.basicInfo.loanYears * 12;
   }
 
   /**
@@ -490,7 +433,7 @@ export default class LoanList extends Vue {
    * @returns 每月还款本金
    */
   get monthlyPrincipal(): number {
-    return this.basicForm.loanAmount / this.calculatedTotalMonths;
+    return this.basicInfo.loanAmount / this.calculatedTotalMonths;
   }
 
   /**
@@ -498,8 +441,8 @@ export default class LoanList extends Vue {
    * @returns 开始年份
    */
   get startYear(): number {
-    if (!this.basicForm.startDate) return moment().year();
-    return moment(this.basicForm.startDate, 'YYYY-MM').year();
+    if (!this.basicInfo.startDate) return moment().year();
+    return moment(this.basicInfo.startDate, 'YYYY-MM').year();
   }
 
   /**
@@ -507,8 +450,8 @@ export default class LoanList extends Vue {
    * @returns 开始月份
    */
   get startMonth(): number {
-    if (!this.basicForm.startDate) return moment().month() + 1;
-    return moment(this.basicForm.startDate, 'YYYY-MM').month() + 1;
+    if (!this.basicInfo.startDate) return moment().month() + 1;
+    return moment(this.basicInfo.startDate, 'YYYY-MM').month() + 1;
   }
 
   /**
@@ -545,6 +488,10 @@ export default class LoanList extends Vue {
     return validPrepayments.reduce((sum, p) => sum + p.amount, 0);
   }
 
+  handleUpdateBasicInfo(basicInfo: Partial<BasicForm>) {
+    this.basicInfo = cloneDeep(basicInfo);
+  }
+
   /**
    * 添加利率行
    */
@@ -570,9 +517,9 @@ export default class LoanList extends Vue {
    * 计算贷款结束日期（使用moment优化）
    */
   handleCalculateEndDate(): void {
-    if (!this.basicForm.startDate) return;
+    if (!this.basicInfo.startDate) return;
 
-    const startMoment = moment(this.basicForm.startDate, 'YYYY-MM');
+    const startMoment = moment(this.basicInfo.startDate, 'YYYY-MM');
     const endMoment = startMoment.clone().add(this.calculatedTotalMonths - 1, 'months');
 
     this.endYear = endMoment.year();
@@ -596,7 +543,7 @@ export default class LoanList extends Vue {
    * @param row 提前还款记录行数据
    */
   handleUpdatePrepaymentMonth(row: any): void {
-    if (row.repaymentDate && this.basicForm.startDate) {
+    if (row.repaymentDate && this.basicInfo.startDate) {
       row.month = this.handleCalculatePeriod(row.repaymentDate);
     }
   }
@@ -607,9 +554,9 @@ export default class LoanList extends Vue {
    * @returns 对应的还款期数
    */
   handleCalculatePeriod(date: string): number {
-    if (!date || !this.basicForm.startDate) return 0;
+    if (!date || !this.basicInfo.startDate) return 0;
 
-    const startMoment = moment(this.basicForm.startDate, 'YYYY-MM');
+    const startMoment = moment(this.basicInfo.startDate, 'YYYY-MM');
     const repayMoment = moment(date, 'YYYY-MM');
 
     // 计算从开始日期到提前还款日期的月数差
@@ -674,7 +621,7 @@ export default class LoanList extends Vue {
       // 获取endDate上一个月的BasicInfo.repaymentDate日作为startDate
       const startDateMonth = endDate.clone().subtract(1, 'months');
       // 获取每月还款日期，如果没有设置则默认为1日
-      const repaymentDay = this.basicForm.repaymentDate || '01';
+      const repaymentDay = this.basicInfo.repaymentDate || '01';
       // 构建正确的startDate
       const startDate = moment(`${startDateMonth.format('YYYY-MM')}-${repaymentDay}`, 'YYYY-MM-DD');
 
@@ -737,9 +684,9 @@ export default class LoanList extends Vue {
    * @returns 格式化的还款日期字符串（YYYY年MM月）
    */
   handleGetRepaymentDate(monthIndex: number): string {
-    if (!this.basicForm.startDate) return '';
+    if (!this.basicInfo.startDate) return '';
 
-    const startMoment = moment(this.basicForm.startDate, 'YYYY-MM');
+    const startMoment = moment(this.basicInfo.startDate, 'YYYY-MM');
     const repaymentMoment = startMoment.clone().add(monthIndex - 1, 'months');
 
     return `${repaymentMoment.year()}年${repaymentMoment.month() + 1}月`;
@@ -751,8 +698,8 @@ export default class LoanList extends Vue {
    */
   handleCalculateFloatingInterest(): number {
     let totalInterest = 0;
-    let remainingPrincipal = this.basicForm.loanAmount; // 剩余本金
-    const monthlyPrincipal = this.basicForm.loanAmount / this.calculatedTotalMonths; // 每月应还本金
+    let remainingPrincipal = this.basicInfo.loanAmount; // 剩余本金
+    const monthlyPrincipal = this.basicInfo.loanAmount / this.calculatedTotalMonths; // 每月应还本金
 
     // 对利率期间按开始日期排序并转换为期数
     const sortedRates = [...this.floatingRates]
@@ -808,7 +755,7 @@ export default class LoanList extends Vue {
     this.totalSaveInterest = 0;
 
     // 初始化变量
-    let currentPrincipal = this.basicForm.loanAmount;
+    let currentPrincipal = this.basicInfo.loanAmount;
     let currentMonths = this.calculatedTotalMonths;
     let currentMonth = 1;
     let totalSaveInterest = 0;
@@ -965,7 +912,7 @@ export default class LoanList extends Vue {
     let remainingPrincipal = principal;
 
     const totalLoanMonths = this.calculatedTotalMonths;
-    const monthlyPrincipal = this.basicForm.loanAmount / totalLoanMonths;
+    const monthlyPrincipal = this.basicInfo.loanAmount / totalLoanMonths;
 
     for (let i = startMonth; i <= endMonth; i++) {
       const monthlyInterest = remainingPrincipal * monthlyRate;
@@ -1068,9 +1015,9 @@ export default class LoanList extends Vue {
    * @returns 对应的还款期数
    */
   handleConvertDateToMonthIndex(dateStr: string): number {
-    if (!dateStr || !this.basicForm.startDate) return 1;
+    if (!dateStr || !this.basicInfo.startDate) return 1;
 
-    const startMoment = moment(this.basicForm.startDate, 'YYYY-MM');
+    const startMoment = moment(this.basicInfo.startDate, 'YYYY-MM');
     const dateMoment = moment(dateStr, 'YYYY-MM');
 
     // 计算从开始日期到指定日期的月数差
@@ -1132,7 +1079,7 @@ export default class LoanList extends Vue {
     this.handleCalculateEndDate();
 
     // 计算固定利率总利息和还款计划
-    const fixedResult = this.handleCalculateEqualPrincipal(this.basicForm.loanAmount, this.fixedRate, this.totalMonths);
+    const fixedResult = this.handleCalculateEqualPrincipal(this.basicInfo.loanAmount, this.fixedRate, this.totalMonths);
     this.fixedTotalInterest = fixedResult.totalInterest;
     this.repaymentSchedule = fixedResult.schedule;
 
@@ -1162,11 +1109,10 @@ export default class LoanList extends Vue {
    * 重置所有表单数据和计算结果
    */
   handleReset(): void {
-    this.basicForm = cloneDeep(DEFAULT_BASIC_INFO); // 重置基本表单数据
     this.fixedRate = 3.1; // 重置固定利率
     // 使用当前日期初始化浮动利率
     this.floatingRates = [{
-      startDate: this.basicForm.startDate || `${new Date().getFullYear()}-${(new Date().getMonth() + 1).toString().padStart(2, '0')}`,
+      startDate: this.basicInfo.startDate || `${new Date().getFullYear()}-${(new Date().getMonth() + 1).toString().padStart(2, '0')}`,
       rate: 3.1
     }];
     this.prepaymentList = cloneDeep(DEFAULT_RESET_PREPAYMENT_LIST); // 重置提前还款设置
