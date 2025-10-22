@@ -40,7 +40,12 @@
         </el-date-picker>
       </el-form-item>
       <el-form-item>
-        <el-button type="primary" @click="handleSave">保存</el-button>
+        <el-button
+            size="small"
+            type="primary"
+            @click="handleSave">
+          保存
+        </el-button>
       </el-form-item>
     </el-form>
   </div>
