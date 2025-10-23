@@ -7,6 +7,12 @@
         @click="handleAddPrepayment">
       添加提前还款
     </el-button>
+    <el-button
+        size="mini"
+        type="primary"
+        @click="handleUpdate">
+      保存
+    </el-button>
     <el-table
         :data="prepaymentList"
         border
@@ -99,6 +105,10 @@ export default class PrepaymentList extends Vue {
     // if (row.repaymentDate && this.basicInfo.startDate) {
     //   row.month = this.handleCalculatePeriod(row.repaymentDate);
     // }
+  }
+
+  handleUpdate(): void {
+    this.$emit('update', this.prepaymentList);
   }
 }
 </script>

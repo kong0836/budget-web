@@ -7,6 +7,12 @@
         @click="handleAddRateRow">
       添加利率行
     </el-button>
+    <el-button
+        size="mini"
+        type="primary"
+        @click="handleUpdate">
+      保存
+    </el-button>
     <el-table
         :data="rateList"
         border
