@@ -293,7 +293,7 @@ export default class LoanList extends Vue {
     return validPrepayments.reduce((sum, p) => sum + p.amount, 0);
   }
 
-  handleUpdateBasicInfo(basicInfo: Partial<BasicForm>) {
+  handleUpdateBasicInfo(basicInfo: BasicForm) {
     this.basicInfo = cloneDeep(basicInfo);
   }
 
