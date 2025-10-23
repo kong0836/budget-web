@@ -7,75 +7,7 @@
 
       <rate-list @update="handleUpdateRateInfo"/>
 
-      <h3>提前还款设置</h3>
-      <el-button
-          size="small"
-          type="primary"
-          @click="handleAddPrepayment">
-        添加提前还款
-      </el-button>
-      <el-table
-          :data="prepaymentList"
-          border
-          stripe>
-        <el-table-column
-            align="center"
-            label="还款金额（元）"
-            prop="amount">
-          <template v-slot="{row}">
-            <el-input
-                v-model="row.amount"
-                placeholder="请输入还款金额"
-                type="number"/>
-          </template>
-        </el-table-column>
-        <el-table-column
-            align="center"
-            label="还款时间"
-            prop="repaymentDate">
-          <template v-slot="{row}">
-            <el-date-picker
-                v-model="row.repaymentDate"
-                placeholder="选择还款时间"
-                type="date"
-                value-format="yyyy-MM-dd"
-                @change="handleUpdatePrepaymentMonth(row)"/>
-          </template>
-        </el-table-column>
-        <el-table-column
-            align="center"
-            label="对应期数"
-            prop="month"
-            width="100">
-          <template v-slot="{row}">
-            <span>{{ row.month || '-' }}</span>
-          </template>
-        </el-table-column>
-        <el-table-column
-            align="center"
-            label="还款方式"
-            prop="type">
-          <template v-slot="{row}">
-            <el-radio-group v-model="row.type" size="small">
-              <el-radio label="shorten">缩短还款期限</el-radio>
-              <el-radio label="reduce">减少月供金额</el-radio>
-            </el-radio-group>
-          </template>
-        </el-table-column>
-        <el-table-column
-            align="center"
-            label="操作"
-            width="80">
-          <template v-slot="{$index}">
-            <el-button
-                v-if="prepaymentList.length > 1"
-                size="small"
-                type="text"
-                @click="handleRemovePrepayment($index)">删除
-            </el-button>
-          </template>
-        </el-table-column>
-      </el-table>
+      <prepayment-list @update="handleUpdatePrepaymentList"/>
 
       <!-- 计算按钮 -->
       <el-row class="action-section">
@@ -86,10 +18,7 @@
               @click="handleCalculate">
             计算
           </el-button>
-          <el-button
-              size="small"
-              type="default"
-              @click="handleReset">
+          <el-button size="small" @click="handleReset">
             重置
           </el-button>
         </el-col>
@@ -258,19 +187,10 @@ import { Form } from "element-ui";
 import { BasicForm, Prepayment, RateInfo } from "@/types/loan";
 import BasicInfo from "@/views/loan/basic-info.vue";
 import RateList from "@/views/loan/rate-list.vue";
+import PrepaymentList from "@/views/loan/prepayment-list.vue";
 
-/**
- * 默认提前还款列表配置
- */
-const DEFAULT_PREPAYMENT_LIST: Prepayment[] = [
-  { amount: 100000, repaymentDate: '2025-01-01', month: 0, type: 'shorten' }
-];
-
-/**
- * 公积金贷款利息计算器组件
- */
 @Component({
-  components: { RateList, BasicInfo }
+  components: { PrepaymentList, RateList, BasicInfo }
 })
 export default class LoanList extends Vue {
   // 表单标签宽度
@@ -284,7 +204,7 @@ export default class LoanList extends Vue {
   // @deprecated 浮动利率设置（按期数）
   floatingRates: any[] = [];
   // 多次提前还款设置
-  prepaymentList: Prepayment[] = cloneDeep(DEFAULT_PREPAYMENT_LIST);
+  prepaymentList: Prepayment[] = [];
 
   // 计算结果相关字段
   showResults = false; // 是否显示计算结果
@@ -381,6 +301,10 @@ export default class LoanList extends Vue {
     this.rateList = cloneDeep(rateList);
   }
 
+  handleUpdatePrepaymentList(prepaymentList: Prepayment[]) {
+    this.prepaymentList = cloneDeep(prepaymentList);
+  }
+
   /**
    * 计算贷款结束日期（使用moment优化）
    */
@@ -392,28 +316,6 @@ export default class LoanList extends Vue {
 
     this.endYear = endMoment.year();
     this.endMonth = endMoment.month() + 1;
-  }
-
-  /**
-   * 添加提前还款记录
-   */
-  handleAddPrepayment(): void {
-    this.prepaymentList.push({
-      amount: 0,
-      repaymentDate: '',
-      month: 0,
-      type: 'shorten'
-    });
-  }
-
-  /**
-   * 更新提前还款对应的期数
-   * @param row 提前还款记录行数据
-   */
-  handleUpdatePrepaymentMonth(row: any): void {
-    if (row.repaymentDate && this.basicInfo.startDate) {
-      row.month = this.handleCalculatePeriod(row.repaymentDate);
-    }
   }
 
   /**
