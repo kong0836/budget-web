@@ -2,7 +2,7 @@
   <div class="prepayment">
     <h3>提前还款设置</h3>
     <el-button
-        size="small"
+        size="mini"
         type="primary"
         @click="handleAddPrepayment">
       添加提前还款
@@ -105,6 +105,8 @@ export default class PrepaymentList extends Vue {
 
 <style lang="scss" scoped>
 .prepayment {
-  background-color: #fff;
+  .el-table {
+    margin-top: 10px;
+  }
 }
 </style>

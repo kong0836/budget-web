@@ -2,7 +2,7 @@
   <div class="rate-list">
     <h3>利率设置</h3>
     <el-button
-        size="small"
+        size="mini"
         type="primary"
         @click="handleAddRateRow">
       添加利率行
@@ -19,7 +19,6 @@
           <el-date-picker
               v-model="row.startDate"
               format="yyyy年MM月"
-              placeholder="选择还款年月"
               type="date"
               value-format="yyyy-MM"/>
         </template>
@@ -32,7 +31,6 @@
           <el-date-picker
               v-model="row.endDate"
               format="yyyy年MM月"
-              placeholder="选择还款年月"
               type="month"
               value-format="yyyy-MM"/>
         </template>
@@ -113,6 +111,8 @@ export default class RateList extends Vue {
 
 <style lang="scss" scoped>
 .rate-list {
-  background-color: #fff;
+  .el-table {
+    margin-top: 10px;
+  }
 }
 </style>

@@ -41,7 +41,7 @@
       </el-form-item>
       <el-form-item>
         <el-button
-            size="small"
+            size="mini"
             type="primary"
             @click="handleSave">
           保存
