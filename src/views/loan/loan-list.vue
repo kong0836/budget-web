@@ -287,7 +287,7 @@ export default class LoanList extends Vue {
    */
   get prepaymentTotalAmount(): number {
     const validPrepayments = this.prepaymentList
-        .filter(p => p.amount > 0 && p.month > 0);
+        .filter(p => p.amount > 0 && p.period > 0);
     return validPrepayments.reduce((sum, p) => sum + p.amount, 0);
   }
 
@@ -516,8 +516,8 @@ export default class LoanList extends Vue {
   handleCalculatePrepayments(): void {
     // 过滤有效且按时间排序的提前还款记录
     const validPrepaymentList = this.prepaymentList
-        .filter(p => p.amount > 0 && p.month > 0)
-        .sort((a, b) => a.month - b.month);
+        .filter(p => p.amount > 0 && p.period > 0)
+        .sort((a, b) => a.period - b.period);
 
     this.prepaymentDetails = [];
     this.totalSaveInterest = 0;
@@ -533,11 +533,11 @@ export default class LoanList extends Vue {
 
     // 遍历每个有效的提前还款记录
     for (const prepayment of validPrepaymentList) {
-      if (prepayment.month <= currentMonth) continue; // 跳过已经处理过的期间
+      if (prepayment.period <= currentMonth) continue; // 跳过已经处理过的期间
 
       // 已还本金
       const monthlyPrincipal = currentPrincipal / currentMonths;
-      const monthsBeforePrepayment = prepayment.month - currentMonth;
+      const monthsBeforePrepayment = prepayment.period - currentMonth;
       const paidPrincipal = monthlyPrincipal * monthsBeforePrepayment;
 
       // 使用当前时间对应的实际年利率
@@ -550,7 +550,7 @@ export default class LoanList extends Vue {
       const monthlyRate = annualRate / 100 / 12;
       // 生成提前还款前的还款计划
       const prepaymentSchedule = this.handleGenerateRepaymentScheduleForPeriod(
-          currentPrincipal, monthlyRate, currentMonth, prepayment.month - 1
+          currentPrincipal, monthlyRate, currentMonth, prepayment.period - 1
       );
       actualRepaymentSchedule = actualRepaymentSchedule.concat(prepaymentSchedule);
 
@@ -564,8 +564,8 @@ export default class LoanList extends Vue {
 
         // 添加提前还款这一期的记录
         actualRepaymentSchedule.push({
-          month: prepayment.month,
-          date: this.handleGetRepaymentDate(prepayment.month),
+          month: prepayment.period,
+          date: this.handleGetRepaymentDate(prepayment.period),
           principal: this.handleFormatCurrency(monthlyPrincipal + prepayment.amount),
           interest: this.handleFormatCurrency(0),
           total: this.handleFormatCurrency(monthlyPrincipal + prepayment.amount),
@@ -581,15 +581,15 @@ export default class LoanList extends Vue {
         this.prepaymentDetails.push({
           index: this.prepaymentDetails.length + 1,
           amount: this.handleFormatCurrency(prepayment.amount),
-          month: prepayment.month,
+          month: prepayment.period,
           type: prepayment.type === 'shorten' ? '缩短期限' : '减少月供',
           saveInterest: this.handleFormatCurrency(saveInterest),
           remainingMonths: '贷款已还清',
           newEndDate: '贷款已还清'
         });
 
-        finalEndDate = this.handleGetRepaymentDate(prepayment.month);
-        finalTotalMonths = prepayment.month; // 最终期数就是提前还款的期数
+        finalEndDate = this.handleGetRepaymentDate(prepayment.period);
+        finalTotalMonths = prepayment.period; // 最终期数就是提前还款的期数
         break;
       }
 
@@ -614,8 +614,8 @@ export default class LoanList extends Vue {
 
       // 添加提前还款这一期的记录
       actualRepaymentSchedule.push({
-        month: prepayment.month,
-        date: this.handleGetRepaymentDate(prepayment.month),
+        month: prepayment.period,
+        date: this.handleGetRepaymentDate(prepayment.period),
         principal: this.handleFormatCurrency(monthlyPrincipal + prepayment.amount),
         interest: this.handleFormatCurrency(0),
         total: this.handleFormatCurrency(monthlyPrincipal + prepayment.amount),
@@ -631,21 +631,21 @@ export default class LoanList extends Vue {
       totalSaveInterest += saveInterest;
       currentPrincipal = remainingAfterPrepayment;
       currentMonths = newMonths;
-      currentMonth = prepayment.month;
-      finalTotalMonths = prepayment.month + newMonths; // 更新最终期数
+      currentMonth = prepayment.period;
+      finalTotalMonths = prepayment.period + newMonths; // 更新最终期数
 
       // 添加提前还款详情
       this.prepaymentDetails.push({
         index: this.prepaymentDetails.length + 1,
         amount: this.handleFormatCurrency(prepayment.amount),
-        month: prepayment.month,
+        month: prepayment.period,
         type: prepayment.type === 'shorten' ? '缩短期限' : '减少月供',
         saveInterest: this.handleFormatCurrency(saveInterest),
         remainingMonths: newMonths,
-        newEndDate: this.handleGetEndDate(this.startYear, this.startMonth, prepayment.month + newMonths)
+        newEndDate: this.handleGetEndDate(this.startYear, this.startMonth, prepayment.period + newMonths)
       });
 
-      finalEndDate = this.handleGetEndDate(this.startYear, this.startMonth, prepayment.month + newMonths);
+      finalEndDate = this.handleGetEndDate(this.startYear, this.startMonth, prepayment.period + newMonths);
     }
 
     // 生成剩余期的还款计划
@@ -831,7 +831,7 @@ export default class LoanList extends Vue {
     // 提前还款
     this.prepaymentList.forEach(row => {
       if (row.repaymentDate) {
-        row.month = this.handleCalculatePeriod(row.repaymentDate);
+        row.period = this.handleCalculatePeriod(row.repaymentDate);
       }
     });
     // 利率设置

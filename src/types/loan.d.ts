@@ -14,7 +14,7 @@ export interface BasicForm {
 export interface Prepayment {
     amount: number; // 还款金额
     repaymentDate: string; // 还款时间
-    month: number; // 对应期数
+    period: number; // 对应期数
     type: string; // 还款方式: 'shorten'(缩短期限)或'reduce'(减少月供)
 }
 
