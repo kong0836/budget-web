@@ -84,7 +84,7 @@ import { cloneDeep } from "lodash";
 import { PrepaymentInfo } from "@/types/loan";
 
 const DEFAULT_PREPAYMENT_LIST: PrepaymentInfo[] = [
-  { amount: 100000, repaymentDate: '2025-01-01', period: 0, type: 'shorten' }
+  { amount: 100000, date: '2025-01-01', period: 0, type: 'shorten' }
 ];
 
 @Component({})
@@ -94,7 +94,7 @@ export default class PrepaymentList extends Vue {
   handleAddPrepayment(): void {
     this.prepaymentList.push({
       amount: 0,
-      repaymentDate: '',
+      date: '',
       period: 0,
       type: 'shorten'
     });

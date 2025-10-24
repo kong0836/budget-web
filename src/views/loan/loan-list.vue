@@ -541,10 +541,10 @@ export default class LoanList extends Vue {
       const paidPrincipal = monthlyPrincipal * monthsBeforePrepayment;
 
       // 使用当前时间对应的实际年利率
-      const annualRate = this.handleGetCurrentAnnualRate(prepayment.repaymentDate);
+      const annualRate = this.handleGetCurrentAnnualRate(prepayment.date);
       // 截止提前还款日时已产生的利息
       const interestBeforePrepayment = this.handleCalculateInterest(
-          currentPrincipal - paidPrincipal, annualRate, prepayment.repaymentDate
+          currentPrincipal - paidPrincipal, annualRate, prepayment.date
       );
 
       const monthlyRate = annualRate / 100 / 12;
@@ -830,8 +830,8 @@ export default class LoanList extends Vue {
     // 基本信息
     // 提前还款
     this.prepaymentList.forEach(row => {
-      if (row.repaymentDate) {
-        row.period = this.handleCalculatePeriod(row.repaymentDate);
+      if (row.date) {
+        row.period = this.handleCalculatePeriod(row.date);
       }
     });
     // 利率设置
