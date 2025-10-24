@@ -28,8 +28,7 @@
         <div class="basic-info">
           <p><strong>贷款总额：</strong>{{ handleFormatCurrency(basicInfo.loanAmount) }}</p>
           <p><strong>贷款期限：</strong>{{ basicInfo.loanYears }}年（{{ totalMonths }}个月）</p>
-          <p><strong>开始还款：</strong>{{ basicInfo.startDate }}
-          </p>
+          <p><strong>开始还款：</strong>{{ basicInfo.startDate }}</p>
           <p><strong>结束还款：</strong>{{ endYear }}年{{ endMonth }}月</p>
         </div>
 
