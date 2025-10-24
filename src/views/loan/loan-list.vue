@@ -10,19 +10,16 @@
       <prepayment-list @update="handleUpdatePrepaymentList"/>
 
       <!-- 计算按钮 -->
-      <el-row class="action-section">
-        <el-col :span="24" class="text-center">
-          <el-button
-              size="small"
-              type="primary"
-              @click="handleCalculate">
-            计算
-          </el-button>
-          <el-button size="small" @click="handleReset">
-            重置
-          </el-button>
-        </el-col>
-      </el-row>
+
+      <el-button
+          size="small"
+          type="primary"
+          @click="handleCalculate">
+        计算
+      </el-button>
+      <el-button size="small" @click="handleReset">
+        重置
+      </el-button>
 
       <!-- 计算结果 -->
       <div v-if="showResults" class="results-section">
@@ -183,7 +180,6 @@
 import { Component, Vue } from "vue-property-decorator";
 import moment from 'moment';
 import { cloneDeep } from "lodash";
-import { Form } from "element-ui";
 import { BasicForm, Prepayment, RateInfo } from "@/types/loan";
 import BasicInfo from "@/views/loan/basic-info.vue";
 import RateList from "@/views/loan/rate-list.vue";
@@ -830,7 +826,6 @@ export default class LoanList extends Vue {
    */
   async handleCalculate(): Promise<void> {
     // 基本信息
-    await (this.$refs.basicForm as Form).validate();
     // 提前还款
     this.prepaymentList.forEach(row => {
       if (row.repaymentDate) {
