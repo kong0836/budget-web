@@ -3,11 +3,11 @@
     <div class="calculator-container">
       <div class="calculator-header">贷款利息计算器</div>
 
-      <basic-info @update="handleUpdateBasicInfo"/>
+      <basic-info ref="basicInfoRef" @update="handleUpdateBasicInfo"/>
 
-      <rate-list @update="handleUpdateRateInfo"/>
+      <rate-list ref="rateListRef" @update="handleUpdateRateInfo"/>
 
-      <prepayment-list @update="handleUpdatePrepaymentList"/>
+      <prepayment-list ref="prepaymentListRef" @update="handleUpdatePrepaymentList"/>
 
       <!-- 计算按钮 -->
 
@@ -35,7 +35,6 @@
 
         <div class="interest-results">
           <h5>利息总额</h5>
-          <p><strong>固定利率总利息：</strong>{{ handleFormatCurrency(fixedTotalInterest) }}</p>
           <p><strong>浮动利率总利息：</strong>{{ handleFormatCurrency(floatingTotalInterest) }}</p>
         </div>
 
@@ -189,31 +188,35 @@ import PrepaymentList from "@/views/loan/prepayment-list.vue";
   components: { PrepaymentList, RateList, BasicInfo }
 })
 export default class LoanList extends Vue {
-  // 表单标签宽度
-  LABEL_WIDTH = '120px';
   // 基本贷款信息表单数据
   basicInfo: Partial<BasicForm> = {};
   // 利率列表数据
   rateList: RateInfo[] = [];
-  // 固定利率值
-  fixedRate = 3.1;
   // @deprecated 浮动利率设置（按期数）
   floatingRates: any[] = [];
   // 多次提前还款设置
   prepaymentList: Prepayment[] = [];
 
+  // 固定利率值
+  fixedRate = 3.1;
+  // 表单标签宽度
+  LABEL_WIDTH = '120px';
   // 计算结果相关字段
   showResults = false; // 是否显示计算结果
   totalMonths = 0; // 贷款总月数
   endYear = 0; // 贷款结束年份
   endMonth = 0; // 贷款结束月份
-  fixedTotalInterest = 0; // 固定利率总利息
   floatingTotalInterest = 0; // 浮动利率总利息
   totalSaveInterest = 0; // 节省利息总额
   finalEndYear = 0; // 最终还款结束年份
   finalEndMonth = 0; // 最终还款结束月份
   finalTotalMonths = 0; // 最终的还款期数
   prepaymentDetails: Array<any> = []; // 每次提前还款的详细信息
+  scheduleTable = {
+    data: [],
+    currentPage: 1,
+    pageSize: 10,
+  };
   repaymentSchedule: Array<any> = []; // 还款计划表
   actualRepaymentSchedule: Array<any> = []; // 实际还款计划(含提前还款)
   // 分页相关字段
@@ -843,31 +846,26 @@ export default class LoanList extends Vue {
     this.totalMonths = this.calculatedTotalMonths;
     this.handleCalculateEndDate();
 
-    // 计算固定利率总利息和还款计划
-    const fixedResult = this.handleCalculateEqualPrincipal(this.basicInfo.loanAmount, this.fixedRate, this.totalMonths);
-    this.fixedTotalInterest = fixedResult.totalInterest;
-    this.repaymentSchedule = fixedResult.schedule;
-
-    // 计算浮动利率总利息
-    this.floatingTotalInterest = this.handleCalculateFloatingInterest();
-
-    // 计算多次提前还款的影响
-    // this.handleCalculatePrepayments();
-
-    console.log('this.actualRepaymentSchedule', this.actualRepaymentSchedule);
-    // 根据是否有提前还款选择显示哪种还款计划
-    const hasPrepayments = this.prepaymentList.some(p => p.amount > 0);
-    if (hasPrepayments && this.actualRepaymentSchedule.length > 0) {
-      // 使用实际还款计划（包含提前还款）
-      this.repaymentSchedule = this.actualRepaymentSchedule;
-    }
-
-    // 重置分页状态
-    this.currentPage = 1;
-    this.searchTerm = '';
-
-    // 显示计算结果
-    this.showResults = true;
+    // // 计算浮动利率总利息
+    // this.floatingTotalInterest = this.handleCalculateFloatingInterest();
+    //
+    // // 计算多次提前还款的影响
+    // // this.handleCalculatePrepayments();
+    //
+    // console.log('this.actualRepaymentSchedule', this.actualRepaymentSchedule);
+    // // 根据是否有提前还款选择显示哪种还款计划
+    // const hasPrepayments = this.prepaymentList.some(p => p.amount > 0);
+    // if (hasPrepayments && this.actualRepaymentSchedule.length > 0) {
+    //   // 使用实际还款计划（包含提前还款）
+    //   this.repaymentSchedule = this.actualRepaymentSchedule;
+    // }
+    //
+    // // 重置分页状态
+    // this.currentPage = 1;
+    // this.searchTerm = '';
+    //
+    // // 显示计算结果
+    // this.showResults = true;
   }
 
   /**
