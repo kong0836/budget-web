@@ -81,15 +81,15 @@
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
 import { cloneDeep } from "lodash";
-import { Prepayment } from "@/types/loan";
+import { PrepaymentInfo } from "@/types/loan";
 
-const DEFAULT_PREPAYMENT_LIST: Prepayment[] = [
+const DEFAULT_PREPAYMENT_LIST: PrepaymentInfo[] = [
   { amount: 100000, repaymentDate: '2025-01-01', period: 0, type: 'shorten' }
 ];
 
 @Component({})
 export default class PrepaymentList extends Vue {
-  prepaymentList: Prepayment[] = cloneDeep(DEFAULT_PREPAYMENT_LIST);
+  prepaymentList: PrepaymentInfo[] = cloneDeep(DEFAULT_PREPAYMENT_LIST);
 
   handleAddPrepayment(): void {
     this.prepaymentList.push({

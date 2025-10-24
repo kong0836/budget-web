@@ -178,7 +178,7 @@
 import { Component, Vue } from "vue-property-decorator";
 import moment from 'moment';
 import { cloneDeep } from "lodash";
-import { BasicForm, Prepayment, RateInfo } from "@/types/loan";
+import { BasicForm, PrepaymentInfo, RateInfo } from "@/types/loan";
 import BasicInfo from "@/views/loan/basic-info.vue";
 import RateList from "@/views/loan/rate-list.vue";
 import PrepaymentList from "@/views/loan/prepayment-list.vue";
@@ -194,7 +194,7 @@ export default class LoanList extends Vue {
   // @deprecated 浮动利率设置（按期数）
   floatingRates: any[] = [];
   // 多次提前还款设置
-  prepaymentList: Prepayment[] = [];
+  prepaymentList: PrepaymentInfo[] = [];
 
   // 固定利率值
   fixedRate = 3.1;
@@ -299,7 +299,7 @@ export default class LoanList extends Vue {
     this.rateList = cloneDeep(rateList);
   }
 
-  handleUpdatePrepaymentList(prepaymentList: Prepayment[]) {
+  handleUpdatePrepaymentList(prepaymentList: PrepaymentInfo[]) {
     this.prepaymentList = cloneDeep(prepaymentList);
   }
 
