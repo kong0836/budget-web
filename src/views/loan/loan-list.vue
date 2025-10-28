@@ -187,19 +187,12 @@ import PrepaymentList from "@/views/loan/prepayment-list.vue";
   components: { PrepaymentList, RateList, BasicInfo }
 })
 export default class LoanList extends Vue {
-  // 基本贷款信息表单数据
   basicInfo: Partial<BasicForm> = {};
-  // 利率列表数据
   rateList: RateInfo[] = [];
-  // @deprecated 浮动利率设置（按期数）
-  floatingRates: any[] = [];
-  // 多次提前还款设置
   prepaymentList: PrepaymentInfo[] = [];
 
   // 固定利率值
   fixedRate = 3.1;
-  // 表单标签宽度
-  LABEL_WIDTH = '120px';
   // 计算结果相关字段
   showResults = false; // 是否显示计算结果
   totalMonths = 0; // 贷款总月数
@@ -470,7 +463,7 @@ export default class LoanList extends Vue {
     const monthlyPrincipal = this.basicInfo.loanAmount / this.calculatedTotalMonths; // 每月应还本金
 
     // 对利率期间按开始日期排序并转换为期数
-    const sortedRates = [...this.floatingRates]
+    const sortedRates = [...this.rateList]
         .filter(period => period.startDate && period.rate > 0)
         .sort((a, b) => {
           const monthA = this.handleConvertDateToMonthIndex(a.startDate);
@@ -828,7 +821,7 @@ export default class LoanList extends Vue {
    */
   async handleCalculate(): Promise<void> {
     // 利率设置
-    const validRates = this.floatingRates.filter(period => period.startDate && period.rate > 0);
+    const validRates = this.rateList.filter(period => period.startDate && period.rate > 0);
     if (validRates.length === 0) {
       this.$message.error('请至少设置一个有效的浮动利率期间');
       return;
