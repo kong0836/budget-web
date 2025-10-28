@@ -461,6 +461,7 @@ export default class LoanList extends Vue {
   handleCalculateFloatingInterest(): number {
     let totalInterest = 0;
     let remainingPrincipal = this.basicInfo.loanAmount; // 剩余本金
+    // TODO 扩展等额本息情况
     const monthlyPrincipal = this.basicInfo.loanAmount / this.calculatedTotalMonths; // 每月应还本金
 
     // 对利率期间按开始日期排序并转换为期数

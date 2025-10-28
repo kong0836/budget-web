@@ -3,6 +3,7 @@ export interface BasicForm {
     loanYears: number; // 贷款年限
     repaymentDate: string; // 每月还款日期
     startDate: string; // 首次还款日期
+    endDate: string; // 结束还款日期
 }
 
 export interface PrepaymentInfo {
