@@ -294,6 +294,11 @@ export default class LoanList extends Vue {
   }
 
   handleUpdatePrepaymentList(prepaymentList: PrepaymentInfo[]) {
+    prepaymentList.forEach(row => {
+      if (row.date) {
+        row.period = this.handleCalculatePeriod(row.date);
+      }
+    });
     this.prepaymentList = cloneDeep(prepaymentList);
   }
 
@@ -822,13 +827,6 @@ export default class LoanList extends Vue {
    * 主计算函数，整合所有计算逻辑
    */
   async handleCalculate(): Promise<void> {
-    // 基本信息
-    // 提前还款
-    this.prepaymentList.forEach(row => {
-      if (row.date) {
-        row.period = this.handleCalculatePeriod(row.date);
-      }
-    });
     // 利率设置
     const validRates = this.floatingRates.filter(period => period.startDate && period.rate > 0);
     if (validRates.length === 0) {
