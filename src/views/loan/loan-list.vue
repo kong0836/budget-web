@@ -34,7 +34,7 @@
 
         <div class="interest-results">
           <h5>利息总额</h5>
-          <p><strong>浮动利率总利息：</strong>{{ handleFormatCurrency(floatingTotalInterest) }}</p>
+          <p><strong>浮动利率总利息：</strong>{{ handleFormatCurrency(totalInterest) }}</p>
         </div>
 
         <div v-if="prepaymentList.some(p => p.amount > 0)" class="prepayment-results">
@@ -205,7 +205,7 @@ export default class LoanList extends Vue {
   totalMonths = 0; // 贷款总月数
   endYear = 0; // 贷款结束年份
   endMonth = 0; // 贷款结束月份
-  floatingTotalInterest = 0; // 浮动利率总利息
+  totalInterest = 0; // 浮动利率总利息
   totalSaveInterest = 0; // 节省利息总额
   finalEndYear = 0; // 最终还款结束年份
   finalEndMonth = 0; // 最终还款结束月份
@@ -223,20 +223,14 @@ export default class LoanList extends Vue {
   pageSize = 12; // 每页显示条数
   searchTerm = ''; // 搜索关键词
 
-  /**
-   * 计算贷款总月数
-   * @returns 贷款总月数
-   */
+  // 贷款总月数
   get calculatedTotalMonths(): number {
     return this.basicInfo.loanYears * 12;
   }
 
-  /**
-   * 计算每月还款本金（元）-等额本金还款
-   * @returns 每月还款本金
-   */
+  // 等额本金-每月还款本金（元）
   get monthlyPrincipal(): number {
-    return this.basicInfo.loanAmount / this.calculatedTotalMonths;
+    return parseFloat((this.basicInfo.loanAmount / this.calculatedTotalMonths).toFixed(2));
   }
 
   /**
@@ -845,8 +839,8 @@ export default class LoanList extends Vue {
     this.totalMonths = this.calculatedTotalMonths;
     this.handleCalculateEndDate();
 
-    // // 计算浮动利率总利息
-    // this.floatingTotalInterest = this.handleCalculateFloatingInterest();
+    // 计算浮动利率总利息
+    this.totalInterest = this.handleCalculateFloatingInterest();
     //
     // // 计算多次提前还款的影响
     // // this.handleCalculatePrepayments();
