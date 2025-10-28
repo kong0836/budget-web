@@ -90,13 +90,19 @@ export default class BasicInfo extends Vue {
     { value: 30, label: '30年' },
   ];
 
+  mounted() {
+    this.handleStartDateChange();
+  }
+
   handleStartDateChange() {
-    if (!this.basicForm.startDate) {
+    debugger;
+    let startDate = this.basicForm?.startDate;
+    if (!startDate) {
       this.basicForm.endDate = '';
       return;
     }
 
-    this.basicForm.endDate = moment(this.basicForm.startDate, 'YYYY-MM').add(this.basicForm.loanYears, 'years').format('YYYY-MM-DD');
+    this.basicForm.endDate = moment(startDate, 'YYYY-MM').add(this.basicForm.loanYears, 'years').format('YYYY-MM-DD');
   }
 
   async handleSave() {
@@ -113,7 +119,7 @@ export default class BasicInfo extends Vue {
 <style lang="scss" scoped>
 .basic-info {
   .el-form {
-    width: 10%;
+    width: 20%;
 
     .el-input,
     .el-select {
