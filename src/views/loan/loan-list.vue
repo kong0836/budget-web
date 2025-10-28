@@ -295,9 +295,7 @@ export default class LoanList extends Vue {
     this.prepaymentList = cloneDeep(prepaymentList);
   }
 
-  /**
-   * 计算贷款结束日期（使用moment优化）
-   */
+  // 贷款结束日期
   handleCalculateEndDate(): void {
     if (!this.basicInfo.startDate) return;
 
@@ -828,7 +826,7 @@ export default class LoanList extends Vue {
     }
 
     // 设置总期数和计算结束日期
-    this.totalMonths = this.calculatedTotalMonths;
+    // this.totalMonths = this.calculatedTotalMonths;
     this.handleCalculateEndDate();
 
     // 计算浮动利率总利息
