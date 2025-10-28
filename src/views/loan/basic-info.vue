@@ -36,8 +36,12 @@
             v-model="basicForm.startDate"
             placeholder="选择还款年月"
             type="date"
-            value-format="yyyy-MM-dd">
+            value-format="yyyy-MM-dd"
+            @change="handleStartDateChange">
         </el-date-picker>
+      </el-form-item>
+      <el-form-item label="结束还款日期" prop="endDate">
+        {{ basicForm.endDate }}
       </el-form-item>
       <el-form-item>
         <el-button
@@ -56,6 +60,7 @@ import { Component, Vue } from 'vue-property-decorator';
 import { cloneDeep } from "lodash";
 import { BasicForm } from "@/types/loan";
 import { Form } from "element-ui";
+import moment from "moment";
 
 /**
  * 默认基本贷款信息配置
@@ -84,6 +89,15 @@ export default class BasicInfo extends Vue {
     { value: 20, label: '20年' },
     { value: 30, label: '30年' },
   ];
+
+  handleStartDateChange() {
+    if (!this.basicForm.startDate) {
+      this.basicForm.endDate = '';
+      return;
+    }
+
+    this.basicForm.endDate = moment(this.basicForm.startDate, 'YYYY-MM').add(this.basicForm.loanYears, 'years').format('YYYY-MM-DD');
+  }
 
   async handleSave() {
     try {
