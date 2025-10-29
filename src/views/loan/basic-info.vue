@@ -5,7 +5,7 @@
         ref="basicForm"
         :model="basicForm"
         :rules="basicFormRules"
-        label-position="top">
+        label-width="120px">
       <el-form-item label="贷款总额" prop="loanAmount">
         <el-input
             v-model="basicForm.loanAmount"
@@ -41,7 +41,12 @@
         </el-date-picker>
       </el-form-item>
       <el-form-item label="结束还款日期" prop="endDate">
-        {{ basicForm.endDate }}
+        <el-date-picker
+            v-model="basicForm.endDate"
+            disabled
+            placeholder="选择还款年月"
+            type="date"
+            value-format="yyyy-MM-dd"/>
       </el-form-item>
       <el-form-item>
         <el-button
@@ -66,10 +71,11 @@ import moment from "moment";
  * 默认基本贷款信息配置
  */
 const DEFAULT_BASIC_INFO: Partial<BasicForm> = {
-  loanAmount: 1000000, // 100万元对应的元单位值
-  loanYears: 30, // 默认贷款30年
-  repaymentDate: '27', // 还款日期为空
-  startDate: '2024-04-27', // 开始日期为空
+  loanAmount: 1000000,
+  loanYears: 30,
+  repaymentDate: '27',
+  startDate: '2024-04-27',
+  endDate: '',
 };
 
 @Component
@@ -95,14 +101,13 @@ export default class BasicInfo extends Vue {
   }
 
   handleStartDateChange() {
-    debugger;
     let startDate = this.basicForm?.startDate;
     if (!startDate) {
       this.basicForm.endDate = '';
       return;
     }
 
-    this.basicForm.endDate = moment(startDate, 'YYYY-MM').add(this.basicForm.loanYears, 'years').format('YYYY-MM-DD');
+    this.basicForm.endDate = moment(startDate, 'YYYY-MM-DD').add(this.basicForm.loanYears, 'years').format('YYYY-MM-DD');
   }
 
   async handleSave() {
@@ -119,7 +124,9 @@ export default class BasicInfo extends Vue {
 <style lang="scss" scoped>
 .basic-info {
   .el-form {
-    width: 20%;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 15px;
 
     .el-input,
     .el-select {

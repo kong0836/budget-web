@@ -881,17 +881,6 @@ export default class LoanList extends Vue {
       margin-bottom: 30px;
     }
 
-    .basic-info {
-      .el-form {
-        width: 15%;
-
-        .el-input,
-        .el-select {
-          width: 100%;
-        }
-      }
-    }
-
     .input-section {
       margin-bottom: 30px;
     }
