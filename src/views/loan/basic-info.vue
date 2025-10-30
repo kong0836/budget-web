@@ -11,6 +11,7 @@
             v-model="basicForm.loanAmount"
             placeholder="请输入贷款总额（元）"
             type="number">
+          <template v-slot:append>元</template>
         </el-input>
       </el-form-item>
       <el-form-item label="贷款年限" prop="loanYears">
@@ -21,6 +22,25 @@
               :label="item.label"
               :value="item.value"/>
         </el-select>
+      </el-form-item>
+      <el-form-item label="还款方式" prop="repaymentType">
+        <el-select v-model="basicForm.repaymentType" @change="handleRepaymentTypeChange">
+          <el-option
+              v-for="item in repaymentTypeOptions"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"/>
+        </el-select>
+      </el-form-item>
+      <el-form-item v-if="isPrincipal" label="每月还款本金">
+        <el-input v-model="basicForm.principal" disabled>
+          <template v-slot:append>元</template>
+        </el-input>
+      </el-form-item>
+      <el-form-item v-if="isInterest" label="每月还款利息">
+        <el-input v-model="basicForm.interest" disabled>
+          <template v-slot:append>元</template>
+        </el-input>
       </el-form-item>
       <el-form-item label="每月还款日期" prop="repaymentDate">
         <el-date-picker
@@ -48,14 +68,6 @@
             type="date"
             value-format="yyyy-MM-dd"/>
       </el-form-item>
-      <el-form-item>
-        <el-button
-            size="mini"
-            type="primary"
-            @click="handleSave">
-          保存
-        </el-button>
-      </el-form-item>
     </el-form>
   </div>
 </template>
@@ -76,6 +88,9 @@ const DEFAULT_BASIC_INFO: Partial<BasicForm> = {
   repaymentDate: '27',
   startDate: '2024-04-27',
   endDate: '',
+  repaymentType: 'principal',
+  principal: 0,
+  interest: 0,
 };
 
 @Component
@@ -95,9 +110,23 @@ export default class BasicInfo extends Vue {
     { value: 20, label: '20年' },
     { value: 30, label: '30年' },
   ];
+  // 还款方式选项
+  repaymentTypeOptions = {
+    PRINCIPAL: { label: '等额本金', value: 'principal' },
+    INTEREST: { label: '等额本息', value: 'interest' },
+  }
+
+  get isPrincipal(): boolean {
+    return this.basicForm?.repaymentType === this.repaymentTypeOptions.PRINCIPAL.value;
+  }
+
+  get isInterest(): boolean {
+    return this.basicForm?.repaymentType === this.repaymentTypeOptions.INTEREST.value;
+  }
 
   mounted() {
     this.handleStartDateChange();
+    this.handleRepaymentTypeChange();
   }
 
   handleStartDateChange() {
@@ -108,6 +137,17 @@ export default class BasicInfo extends Vue {
     }
 
     this.basicForm.endDate = moment(startDate, 'YYYY-MM-DD').add(this.basicForm.loanYears, 'years').format('YYYY-MM-DD');
+  }
+
+  handleRepaymentTypeChange() {
+    try {
+      if (this.isPrincipal) {
+        this.basicForm.principal = parseFloat((this.basicForm.loanAmount / this.basicForm.loanYears / 12).toFixed(2));
+        return;
+      }
+    } catch (error) {
+      console.error(error);
+    }
   }
 
   async handleSave() {

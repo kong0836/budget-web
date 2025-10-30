@@ -221,11 +221,6 @@ export default class LoanList extends Vue {
     return this.basicInfo.loanYears * 12;
   }
 
-  // 等额本金-每月还款本金（元）
-  get monthlyPrincipal(): number {
-    return parseFloat((this.basicInfo.loanAmount / this.calculatedTotalMonths).toFixed(2));
-  }
-
   /**
    * 从日期字符串中获取年份（使用moment优化）
    * @returns 开始年份
@@ -295,15 +290,19 @@ export default class LoanList extends Vue {
     this.prepaymentList = cloneDeep(prepaymentList);
   }
 
-  // 贷款结束日期
-  handleCalculateEndDate(): void {
-    if (!this.basicInfo.startDate) return;
+  /**
+   * 主计算函数，整合所有计算逻辑
+   */
+  async handleCalculate(): Promise<void> {
+    // 利率设置
+    const validRates = this.rateList.filter(period => period.startDate && period.rate > 0);
+    if (validRates.length === 0) {
+      this.$message.error('请至少设置一个有效的浮动利率期间');
+      return;
+    }
 
-    const startMoment = moment(this.basicInfo.startDate, 'YYYY-MM');
-    const endMoment = startMoment.clone().add(this.calculatedTotalMonths - 1, 'months');
-
-    this.endYear = endMoment.year();
-    this.endMonth = endMoment.month() + 1;
+    // 计算浮动利率总利息
+    this.totalInterest = this.handleCalculateFloatingInterest();
   }
 
   /**
@@ -812,43 +811,6 @@ export default class LoanList extends Vue {
       message: `第${row.month}期详情：本金${row.principal}，利息${row.interest}，月供${row.total}，剩余本金${row.remaining}`,
       type: 'info'
     });
-  }
-
-  /**
-   * 主计算函数，整合所有计算逻辑
-   */
-  async handleCalculate(): Promise<void> {
-    // 利率设置
-    const validRates = this.rateList.filter(period => period.startDate && period.rate > 0);
-    if (validRates.length === 0) {
-      this.$message.error('请至少设置一个有效的浮动利率期间');
-      return;
-    }
-
-    // 设置总期数和计算结束日期
-    // this.totalMonths = this.calculatedTotalMonths;
-    this.handleCalculateEndDate();
-
-    // 计算浮动利率总利息
-    this.totalInterest = this.handleCalculateFloatingInterest();
-    //
-    // // 计算多次提前还款的影响
-    // // this.handleCalculatePrepayments();
-    //
-    // console.log('this.actualRepaymentSchedule', this.actualRepaymentSchedule);
-    // // 根据是否有提前还款选择显示哪种还款计划
-    // const hasPrepayments = this.prepaymentList.some(p => p.amount > 0);
-    // if (hasPrepayments && this.actualRepaymentSchedule.length > 0) {
-    //   // 使用实际还款计划（包含提前还款）
-    //   this.repaymentSchedule = this.actualRepaymentSchedule;
-    // }
-    //
-    // // 重置分页状态
-    // this.currentPage = 1;
-    // this.searchTerm = '';
-    //
-    // // 显示计算结果
-    // this.showResults = true;
   }
 
   /**
