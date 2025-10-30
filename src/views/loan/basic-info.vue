@@ -38,9 +38,7 @@
         </el-input>
       </el-form-item>
       <el-form-item v-if="isInterest" label="每月还款利息">
-        <el-input v-model="basicForm.interest" disabled>
-          <template v-slot:append>元</template>
-        </el-input>
+        <b>剩余本金 × 月利率</b>
       </el-form-item>
       <el-form-item label="每月还款日期" prop="repaymentDate">
         <el-date-picker
