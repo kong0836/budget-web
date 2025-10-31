@@ -204,7 +204,7 @@ export default class LoanList extends Vue {
   finalEndMonth = 0; // 最终还款结束月份
   finalTotalMonths = 0; // 最终的还款期数
   prepaymentDetails: Array<any> = []; // 每次提前还款的详细信息
-  scheduleTable = {
+  repaymentTable = {
     data: [],
     currentPage: 1,
     pageSize: 10,
@@ -215,6 +215,11 @@ export default class LoanList extends Vue {
   currentPage = 1; // 当前页码
   pageSize = 12; // 每页显示条数
   searchTerm = ''; // 搜索关键词
+
+  // 初始还款总期数
+  get totalPeriod(): number {
+    return this.basicInfo.loanYears * 12;
+  }
 
   // 贷款总月数
   get calculatedTotalMonths(): number {
@@ -301,9 +306,30 @@ export default class LoanList extends Vue {
       return;
     }
 
-    // 计算浮动利率总利息
-    this.totalInterest = this.handleCalculateFloatingInterest();
+    // 计算还款明细
+    this.handleCalculateInterestDetail();
   }
+
+  // 还款明细
+  handleCalculateInterestDetail() {
+    try {
+      console.log('计算还款明细');
+      // TODO 判断是否存在提前还款 && 还款方式是缩短期限
+      let loanAmount = this.basicInfo.loanAmount || 0;
+      console.log('贷款总额', loanAmount);
+      let repaymentType = this.basicInfo.repaymentType;
+      console.log('还款方式', repaymentType);
+      this.repaymentTable.data = [];
+      for (let i = 0; i < this.totalPeriod; i++) {
+        console.log('还款期数', i);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  // 等额本金还款明细
+  // 等额本息还款明细
 
   /**
    * 计算提前还款对应的期数（使用moment优化）

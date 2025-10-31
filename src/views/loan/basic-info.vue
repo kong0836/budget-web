@@ -10,7 +10,8 @@
         <el-input
             v-model="basicForm.loanAmount"
             placeholder="请输入贷款总额（元）"
-            type="number">
+            type="number"
+            @change="handleRepaymentTypeChange">
           <template v-slot:append>元</template>
         </el-input>
       </el-form-item>
